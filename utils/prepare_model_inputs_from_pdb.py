@@ -329,7 +329,6 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
                                partners=[],
                                mr_p0=1,
                                mr_p1=0,
-                               use_pseudo_cb=False,
                                partner_selection='Ab',
                                mask_ab_region=None,
                                mask_ab_indices=None,
@@ -550,66 +549,5 @@ def get_antibody_info_from_pdb_file(pdb_file, max_id_len=40,
     batch = protein_data_batcher(p0.id, nfeats, coords, missing_residues_mask,
                         sequence_label, seq_positions, {}, with_metadata=with_metadata)
     return batch
-
-
-def get_contact_residues(input_dict, index=0, contact_dist_threshold=8.0,
-                        ab_chains_dict={'H':'H', 'L':'L'}):
-    id_ = input_dict['id']
-    #print(input_dict.keys())
-
-    light_prim = np.zeros((0))
-    if ab_chains_dict['H'] in input_dict:
-        heavy_prim = input_dict[ab_chains_dict['H']]
-        heavy_prim = np.array(heavy_prim)
-    if ab_chains_dict['L'] in input_dict:
-        light_prim = input_dict[ab_chains_dict['L']]
-        light_prim = np.array(light_prim)
-    if input_dict['antigen_info']:
-        antigen_prim = input_dict['antigen_prim']
-        antigen_prim = np.array(antigen_prim)
-    
-    ag_contact_indices = \
-        torch.tensor((input_dict['chain_contact_indices'])).long()
-    
-    ag_frag_positions = \
-        torch.tensor(input_dict['frag_indices']).long()
-
-    # Get CDR loops
-    cdr_names = []
-    cdrs = []
-    for cdr in ['h1', 'h2', 'h3', 'l1', 'l2', 'l3']:
-        if len(input_dict[cdr]) == 2:
-            cdr_names.append(cdr)
-            cdrs.append(input_dict[cdr])
-
-
-    ab = AntibodyTypeInteractingProtein(index,
-                                        'ab',
-                                        id_,
-                                        heavy_prim,
-                                        light_prim,
-                                        cdrs=cdrs,
-                                        cdr_names=cdr_names)
-    ag =\
-        FragmentedMultiChainInteractingProtein(index,
-                                                'ag',
-                                                id_,
-                                                antigen_prim,
-                                                ag_contact_indices,
-                                                ag_frag_positions)
-    len_ag = len(antigen_prim)
-    len_ab = len(heavy_prim) + len(light_prim)
-    dist_angle_mat = input_dict['dist_angle_mat']
-    ab.dist_angle_mat = dist_angle_mat[:, :len_ab, :len_ab]
-    ag.dist_angle_mat = dist_angle_mat[:, len_ab:len_ab + len_ag,
-                                        len_ab:len_ab + len_ag]
-    abag_complex = InteractingPartners(ab, ag, dist_angle_mat)
-    abag_complex.setup_paratope_epitope(
-        contact_dist_threshold=contact_dist_threshold)
-    paratope_mask = abag_complex.paratope.tolist()
-    ab.contact_indices = [i for i in range(len(paratope_mask)) if paratope_mask[i]==1]
-
-    #print(ab.contact_indices)
-    return ab.contact_indices
 
 

@@ -8,9 +8,8 @@ from utils.metrics \
     import get_recovery_metrics_for_batch
 from src.data.dataloaders import get_dataloader_for_testing
 from utils.util import num_to_letter, _aa_dict
-from utils.inference.prepare_model_inputs_from_pdb \
+from utils.prepare_model_inputs_from_pdb \
                 import get_ppi_info_from_pdb_file, get_abag_info_from_pdb_file
-from utils.inference import load_model
 from utils.command_line_utils \
      import _get_args
 import sys

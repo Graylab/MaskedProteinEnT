@@ -37,7 +37,15 @@ def _get_args():
                         type=str,
                         default='',
                         help='mask ab region; h1,h2,h3,l1,l2,l3,cdrs')
-   parser.add_argument('--num_gpus',
+    parser.add_argument('--contact_residues_only',
+                        action='store_true',
+                        default=False,
+                        help='select only contact residues with --mask_ab_region')
+    parser.add_argument('--antibody',
+                        action='store_true',
+                        default=False,
+                        help='use with PPISampler')
+    parser.add_argument('--num_gpus',
                         type=int,
                         default=1,
                         help='number of gpus')
@@ -69,7 +77,7 @@ def _get_args():
                         type=str,
                         default='',
                         help='load info from pdb file instead of h5 file')
-    parser.add_argument('--ppi_partners_json',
+    parser.add_argument('--partners_json',
                         type=str,
                         default='',
                         help='dictionary mapping pdbfile basename to partner chains separated by underscore')
@@ -108,6 +116,6 @@ def _get_args():
     parser.add_argument('--partner_name',
                         type=str,
                         default='p0',
-                        help='Set which partner in complex to design; options: p0, p1, Ab, Ag, both')
+                        help='Set which partner in complex to design; options: p0, p1, Ab, Ag, p0p1, AbAg')
     return parser.parse_args()
 
