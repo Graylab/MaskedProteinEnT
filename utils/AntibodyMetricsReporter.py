@@ -4,16 +4,19 @@ import random
 import os
 import sys
 import json
-from deeph3.datasets.AntibodyMaskedMultiAtomDatasetBatched\
-     import AntibodyMaskedMultiAtomDatasetBatched 
-from deeph3.models.ProteinMaskedLabelModel.utils.command_line_utils \
-     import _get_args, split_dataset
-from deeph3.models.ProteinMaskedLabelModel.dataloaders.MaskedSequenceStructureMADataModule\
-     import get_ppi_dataset_setup, _helper_loader
-from deeph3.util.util import _aa_dict, num_to_letter
 from tqdm import tqdm
-from deeph3.models.ProteinMaskedLabelModel.train_masked_model \
-         import load_model, get_dataloaders_ppi
+import sys
+
+from src.data.datasets.AntibodyMaskedMultiAtomDatasetBatched\
+     import AntibodyMaskedMultiAtomDatasetBatched 
+from src.data.datasets.datasets import get_ppi_dataset_setup
+from src.data.dataloaders import get_dataloaders_ppi, _helper_loader
+from utils.metrics import get_recovery_metrics_for_batch
+from src.data.dataloaders import get_dataloader_for_testing
+from utils.util import num_to_letter, _aa_dict
+from utils.prepare_model_inputs_from_pdb \
+                import get_ppi_info_from_pdb_file, get_abag_info_from_pdb_file
+from utils.command_line_utils import _get_args
 
 
 torch.set_default_dtype(torch.float64)
@@ -33,7 +36,6 @@ class AntibodyMetricsReporter():
         super().__init__()
 
         self.args = _get_args()
-        self.use_multiple_models = self.args.use_multiple_models
         self.gmodel = self.args.protein_gmodel
         self.partner_selection = partner_selection
         self.region_selection = region_selection
@@ -42,15 +44,8 @@ class AntibodyMetricsReporter():
         self.acc_region_dataset = (torch.zeros((len(self.region_keys))).to(device),
                   torch.zeros((len(self.region_keys))).to(device)
                  )
-        if not self.use_multiple_models:
-            self.model = load_model({}, self.args.model, self.args.protein_gmodel).to(device)
-            self.model.freeze()
-        else:
-            self.model_1 = load_model({}, self.args.model_1, self.args.protein_gmodel).to(device)
-            self.model_2 = load_model({}, self.args.model_2, self.args.protein_gmodel).to(device)
-            self.model_1.freeze()
-            self.model_2.freeze()
-            self.model_dict = {type(self.model_1): self.model_1, type(self.model_2): self.model_2}
+        self.model = ProteinMaskedLabelModel_EnT_MA.load_from_checkpoint(self.args.model).to(device)
+        self.model.freeze()
         
         self.write_sequences = False
 
@@ -208,12 +203,7 @@ class AntibodyMetricsReporter():
         id, input_data, metadata = batch
         cleanid = get_clean_id(id[0])
         input_data_len = len(input_data)
-        if input_data_len == 6:
-            nfeats, coords, _, mask, labels, pos_indices = input_data
-        elif input_data_len == 5:
-            nfeats, coords, _, mask, labels = input_data
-        else:
-            sys.exit('Model with inputs not supported: Input length: {}'.format(input_data_len))
+        nfeats, coords, _, mask, labels, pos_indices = input_data
         labels_list = list(labels.detach().numpy())
         region_dict = metadata[0]['cdrs']
         if not self.region_selection is None:
