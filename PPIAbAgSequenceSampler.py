@@ -9,7 +9,7 @@ from utils.metrics \
 from src.data.dataloaders import get_dataloader_for_testing
 from utils.util import num_to_letter, _aa_dict
 from utils.inference.prepare_model_inputs_from_pdb \
-                import get_ppi_info_from_pdb_file
+                import get_ppi_info_from_pdb_file, get_abag_info_from_pdb_file
 from utils.inference import load_model
 from utils.command_line_utils \
      import _get_args
@@ -78,14 +78,18 @@ class PPISequenceSampler():
             self.d_loader = get_dataloader_for_testing(mr=self.args.masking_rate_max,
                                     mr_min=mr_min,
                                     partner_selection=partner_selection,
-                                    with_metadata=False)
+                                    with_metadata=False,
+                                    region_selection=args.mask_ab_region,
+                                    intersect_with_contacts=args.contact_residues_only)
             d_loader_with_meta = get_dataloader_for_testing(mr=self.args.masking_rate_max,
                                     mr_min=mr_min,
                                     partner_selection=partner_selection,
-                                    with_metadata=True)
+                                    with_metadata=True,
+                                    region_selection=args.mask_ab_region,
+                                    intersect_with_contacts=args.contact_residues_only)
         else:
             assert os.path.exists(self.args.from_pdb)
-            assert os.path.exists(self.args.ppi_partners_json)
+            assert os.path.exists(self.args.partners_json)
 
             self.args.masking_rate_min = 0.0
             if partner_selection == 'both':
@@ -101,7 +105,7 @@ class PPISequenceSampler():
                 print(f'{partner_selection} not supported')
                 sys.exit()
                 
-            ppi_partners = json.load(open(self.args.ppi_partners_json, 'r'))
+            ppi_partners = json.load(open(self.args.partners_json, 'r'))
             if os.path.isdir(self.args.from_pdb):
                 pdb_files = glob.glob(self.args.from_pdb + '.pdb')
                 dirname = self.args.from_pdb
@@ -112,9 +116,20 @@ class PPISequenceSampler():
             for pdbid in ppi_partners:
                 partners = ppi_partners[pdbid].split('_')
                 pdb_file = glob.glob(f'{dirname}/{pdbid.lower()}_*.pdb')[0]
-                batch = get_ppi_info_from_pdb_file(pdb_file, partners=partners,
-                                                   mr_p0=mr_p0,
-                                                   mr_p1=mr_p1)
+                if args.antibody:
+                    batch = get_abag_info_from_pdb_file(pdb_file,
+                                                        partners=partners,
+                                                        mr_p0=mr_p0,
+                                                        mr_p1=mr_p1,
+                                                        partner_selection=partner_selection,
+                                                        mask_ab_region=mask_ab_region,
+                                                        mask_ab_indices==args.mask_ab_region,
+                                                        assert_contact=args.contact_residues_only
+                                                        )
+                else:
+                    batch = get_ppi_info_from_pdb_file(pdb_file, partners=partners,
+                                                        mr_p0=mr_p0,
+                                                        mr_p1=mr_p1)
                 if batch is None:
                     continue
                 self.d_loader.append(batch)
@@ -122,14 +137,24 @@ class PPISequenceSampler():
             for pdbid in ppi_partners:
                 partners = ppi_partners[pdbid].split('_')
                 pdb_file = glob.glob(f'{dirname}/{pdbid.lower()}_*.pdb')[0]
-                batch = get_ppi_info_from_pdb_file(pdb_file, partners=partners,
-                                                   mr_p0=mr_p0,
-                                                   mr_p1=mr_p1,
-                                                   with_metadata=True)
+                if args.antibody:
+                    batch = get_abag_info_from_pdb_file(pdb_file,
+                                                        partners=partners,
+                                                        mr_p0=mr_p0,
+                                                        mr_p1=mr_p1,
+                                                        partner_selection=partner_selection,
+                                                        mask_ab_region=mask_ab_region,
+                                                        mask_ab_indices==args.mask_ab_region,
+                                                        assert_contact=args.contact_residues_only
+                                                        with_metadata=True)
+                else:
+                    batch = get_ppi_info_from_pdb_file(pdb_file, partners=partners,
+                                                    mr_p0=mr_p0,
+                                                    mr_p1=mr_p1,
+                                                    with_metadata=True)
                 if batch is None:
                     continue
                 d_loader_with_meta.append(batch)
-        
         
         self.outdir = self.args.output_dir
         
@@ -171,9 +196,10 @@ class PPISequenceSampler():
                                     for cleanid in contact_res_indices_p1_rel]))
 
 
-    def sample(self, temp=1.0, N=100, write_fasta_for_colab_argmax=False,
+    def sample(self, temp=1.0, N=100, 
+               write_fasta_for_colab_argmax=False,
                write_fasta_for_colab_sampled=False,
-                subset_ids=[], partner_name='p0'):
+               subset_ids=[], partner_name='p0'):
         print('Subset ids:', subset_ids)
 
         if partner_name in ['Ab', 'p0']:
@@ -189,15 +215,10 @@ class PPISequenceSampler():
 
         self.get_dataloader(partner_selection=partner_selection, subset_ids=subset_ids)
         
-        
         seqrec_sampled_dict = {}
         seqrec_argmax_dict= {}
         perplexity_dict = {}
         total_nodes = {}
-        per_res_recovery = {}
-        per_res_recovery['id'] = []
-        per_res_recovery['dG'] = []
-        per_res_recovery['correct'] = []
         with torch.no_grad():
             ids_seen = []
             for batch in self.d_loader:
