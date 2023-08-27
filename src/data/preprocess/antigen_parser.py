@@ -1,11 +1,9 @@
-from src.data.preprocess.ppi_parser import get_id
-from src.data.preprocess.fragment_utils import *
 import numpy as np
 import torch
-from src.preprocess.parsing_utils import get_cdr_indices,\
+from src.data.preprocess.parsing_utils import get_cdr_indices,\
                                             get_chain_seqs_from_pdb
 
-from src.util.pdb import protein_dist_coords_matrix
+from src.data.utils.pdb import protein_dist_coords_matrix
 
 from src.data.preprocess.ppi_parser import get_dist_angle_mat, get_partner_masks
 
@@ -33,24 +31,6 @@ def get_ab_ag_lengths_from_info(info):
             ag_len += len(info[_])
     return ab_len, ag_len
 
-
-def combined_separate_matrices(dist_angle_mat_ab,dist_angle_mat_int,dist_angle_mat_ag,lengths,mask_fill_value = -999):
-    [ab_len,ag_len] = lengths
-    dist_angle_mat_combined = torch.ones((dist_angle_mat_ab.shape)) * mask_fill_value
-    mask_ag_all = get_partner_masks(ab_len,ag_len,s_1=1,s_2=0,s_3=0,s_4=0)
-    mask_non_int = get_partner_masks(ab_len,ag_len,s_1=0,s_2=1,s_3=1,s_4=0)
-    mask_ab_all = get_partner_masks(ab_len,ag_len,s_1=0,s_2=0,s_3=0,s_4=1)
-
-    f = dist_angle_mat_combined.shape[0]
-    mask_ab_all = mask_ab_all.unsqueeze(0).expand(f, -1, -1)
-    mask_ag_all = mask_ag_all.unsqueeze(0).expand(f, -1, -1)
-    mask_non_int = mask_non_int.unsqueeze(0).expand(f, -1, -1)
-
-    dist_angle_mat_combined[mask_ag_all == 1] = dist_angle_mat_ab[mask_ag_all == 1]
-    dist_angle_mat_combined[mask_non_int == 1] =\
-        dist_angle_mat_int[mask_non_int == 1]
-    dist_angle_mat_combined[mask_ab_all == 1] = dist_angle_mat_ag[mask_ab_all == 1]
-    return dist_angle_mat_combined
 
 
 def _get_contact_residues(dist_mat_np,ab_len,distance_cutoff,\
@@ -301,7 +281,13 @@ def get_antigen_contact_fragments(pdb_file,distance_cutoff=12.0,\
         if chain_id in chain_seqs:
             antigen_chains.append(chain_id)
     
-    dist_angle_mat, dist_mat = get_dist_angle_mat(pdb_file)
+    try:
+        protein_geometry_mats = protein_dist_coords_matrix(pdb_file)
+    except:
+        return None
+    
+    dist_mat = protein_geometry_mats[0]
+    
     cdr_indices = get_cdr_indices(pdb_file)
     print(cdr_indices)
     _, contact_frags, _ =  get_antigen_interface(chain_seqs,dist_mat,
@@ -320,6 +306,38 @@ def add_protein_info(info,pdb_file,chain_seqs):
         protein_chains.append(chain_id)
     info.update(dict(protein_chains=protein_chains))
 
+    #try:
+    protein_geometry_mats = protein_dist_coords_matrix(pdb_file)
+    #except:
+    #    return None
+    
+    dist_mat = protein_geometry_mats[0]
+    coords = protein_geometry_mats[1]
+    
+    info.update(dict(bk_and_cb_coords=coords))
+    
+    info.update(
+    dict(dist_mat=dist_mat.unsqueeze(0)))
+
+    return info
+
+def add_antigen_info_full(info,pdb_file,chain_seqs,
+                          cdr_indices,
+                          distance_cutoff=12.0,\
+                          loops_only_interface=True,\
+                          include_epitope_neighbors=False,\
+                          distance_cutoff_epitope=12.0,
+                          write_trunc_pdbs=False,
+                        ):
+    antigen_chains=[]
+    #always loop over ag_chain_ids to maintain the sequence in which chains are
+    for chain_id in ag_chains_ids:
+        if chain_id in chain_seqs:
+            antigen_chains.append(chain_id)
+    info.update(dict(antigen_chains=antigen_chains))
+
+    print(cdr_indices)
+
     try:
         protein_geometry_mats = protein_dist_coords_matrix(pdb_file)
     except:
@@ -333,4 +351,48 @@ def add_protein_info(info,pdb_file,chain_seqs):
     info.update(
     dict(dist_mat=dist_mat.unsqueeze(0)))
 
+    data_antigen_interface = \
+                    get_antigen_interface(chain_seqs,dist_mat,
+                                         cdr_indices,
+                                         distance_cutoff=distance_cutoff,\
+                                         loops_only_interface=loops_only_interface,\
+                                         include_epitope_neighbors=include_epitope_neighbors,\
+                                         distance_cutoff_epitope=distance_cutoff_epitope
+                                         )
+    if data_antigen_interface is None:
+        print('No antigen interacting residues found')
+        return None
+    else:
+        ag_contact_frags = data_antigen_interface[1]
+
+    
+    info.update(dict(chain_contact_indices=ag_contact_frags))
+
+    ab_len, ag_len = get_ab_ag_lengths(chain_seqs)
+    ag_len = dist_angle_mat.shape[1] - ab_len #ag seq may have been trimmed
+    
+    pdb_residue_ids_dict = get_residue_numbering_for_pdb(pdb_file)
+    
+    frag_indices = []
+    pdb_indices = []
+    chain_fragments ={}
+    prev_len = 0
+    for chain_num, chain in enumerate(ag_chain_ids):
+        frag_indices += [i+prev_len for i in range(len(chain_seqs[chain]))]
+        offset = 100 if chain_num > 0 else 0
+        pdb_indices += [t+offset for t in pdb_residue_ids_dict[chain]]
+        prev_len += len(chain_seqs[chain])
+        chain_fragments[chain] = [i for i in range(len(chain_seqs[chain]))]
+
+     
+    info.update(dict(chain_fragments=chain_fragments))
+
+    rel_contact_indices = [frag_indices.index(ind)
+                                    for ind in uniq_epi_indices_contg_flat]
+    frag_indices_pdb = [pdb_indices[t] for t in frag_indices]
+
+    info.update(dict(frag_indices=frag_indices_pdb))
+    info.update(dict(antigen_prim=antigen_prim))
+
     return info
+

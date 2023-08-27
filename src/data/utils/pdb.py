@@ -11,7 +11,64 @@ from bisect import bisect_left, bisect_right
 import torch
 import numpy as np
 import pandas as pd
-from src.data.utils.geometry import calc_dist_mat
+from src.data.utils.geometry import calc_dist_mat, get_masked_mat
+
+def renumber_seq(chain_seq, scheme="-c"):
+    success = False
+    time.sleep(1)
+    for i in range(10):
+        try:
+            response = requests.post(
+                    'http://www.bioinf.org.uk/abs/abnum/abnum.cgi',
+                    data={
+                        "plain": "1",
+                        "scheme": scheme,
+                        "aaseq": chain_seq}
+                    )
+            success = response.status_code == 200 and not ("<html>"
+                                                           in response.text)
+
+            if success:
+                break
+            else:
+                time.sleep((i + 1) * 5)
+        except requests.exceptions.ConnectionError:
+            time.sleep(60)
+
+    # if success:
+    numbering = response.text
+    return numbering
+
+
+def renumber_pdb(old_pdb, renum_pdb):
+    success = False
+    time.sleep(5)
+    for i in range(10):
+        try:
+            with open(old_pdb, 'rb') as f:
+                response = requests.post(
+                    'http://www.bioinf.org.uk/abs/abnum/abnumpdb.cgi',
+                    params={
+                        "plain": "1",
+                        "output": "-HL",
+                        "scheme": "-c"
+                    },
+                    files={"pdb": f})
+
+            success = response.status_code == 200 and not ("<html>"
+                                                           in response.text)
+
+            if success:
+                break
+            else:
+                time.sleep((i + 1) * 5)
+        except requests.exceptions.ConnectionError:
+            time.sleep(60)
+
+    # if success:
+    new_pdb_data = response.text
+    with open(renum_pdb, "w") as f:
+        f.write(new_pdb_data)
 
 
 def get_pdb_chain_seq(pdb_file, chain_id):
@@ -167,10 +224,10 @@ def get_atom_coords_mask(coords):
 
 
 def protein_dist_coords_matrix(pdb_file,
+                              mask=None,
                               mask_fill_value=-999,
                               device=None,
                               chains=None):
-    logger = logging.getLogger()
     atom_coords = get_atom_coords(pdb_file, chains=chains)
     
     atom_coords = get_atom_coords(pdb_file)
@@ -178,11 +235,16 @@ def protein_dist_coords_matrix(pdb_file,
     n_coords = atom_coords['N']
     ca_coords = atom_coords['CA']
     cb_coords = atom_coords['CB']
+    c_coords = atom_coords['C']
     cb_ca_coords = atom_coords['CBCA']
+    seq_len = len(ca_coords)
+    if mask is None:
+        mask = torch.ones(seq_len).byte()
     
     n_mask = get_atom_coords_mask(n_coords)
     ca_mask = get_atom_coords_mask(ca_coords)
     cb_mask = get_atom_coords_mask(cb_coords)
+    c_mask = get_atom_coords_mask(c_coords)
     cb_ca_mask = get_atom_coords_mask(cb_ca_coords)
     
     cb_coords[(mask & cb_mask)==0] = mask_fill_value
@@ -308,3 +370,27 @@ def get_indices_dict_for_cdrs(target_pdb, cdr_loops="h1,h2,h3,l1,l2,l3", per_cha
     return cdr_indices_dict
 
 
+def get_pdb_atoms(pdb_file_path):
+    """Returns a list of the atom coordinates, and their properties in a pdb file
+    :param pdb_file_path:
+    :return:
+    """
+    with open(pdb_file_path, 'r') as f:
+        lines = [line for line in f.readlines() if 'ATOM' in line]
+    column_names = [
+        'atom_num', 'atom_name', 'alternate_location_indicator',
+        'residue_name', 'chain_id', 'residue_num',
+        'code_for_insertions_of_residues', 'x', 'y', 'z', 'occupancy',
+        'temperature_factor', 'segment_identifier', 'element_symbol'
+    ]
+    # Get the index at which each column starts/ends
+    column_ends = np.array(
+        [3, 10, 15, 16, 19, 21, 25, 26, 37, 45, 53, 59, 65, 75, 77])
+    column_starts = column_ends[:-1] + 1
+    column_ends = column_ends[1:]  # Ignore the first column (just says 'ATOM')
+
+    rows = [[
+        l[start:end + 1].replace(' ', '')
+        for start, end in zip(column_starts, column_ends)
+    ] for l in lines]
+    return pd.DataFrame(rows, columns=column_names)

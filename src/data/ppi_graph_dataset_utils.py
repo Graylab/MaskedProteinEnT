@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 import math
 
-from src.data.geometry import calc_dist_mat
-
 
 def get_noise(input, var=0.005, dim=-1):
     return (var**0.5)*torch.randn(input.shape)

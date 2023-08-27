@@ -12,6 +12,23 @@ def get_num_bkbone_atoms(num_atoms):
     return bkb_atoms
 
 
+def mask_cb_coords(masked_seq_label, atom_coords):
+    num_atoms = atom_coords.shape[1]
+    bkb_atoms = get_num_bkbone_atoms(num_atoms)
+    sequence_label_exp = torch.tensor(masked_seq_label).clone().detach()
+    sequence_label_exp[sequence_label_exp == 20] = -1 # 
+    sequence_label_exp[sequence_label_exp != -1] = 1 # mask these sidechain coords
+    # rearrange by backbone and cb for masking masking
+    coord_label_input = torch.ones((atom_coords.shape[0], bkb_atoms, 3))
+    coord_label_masked = torch.ones((atom_coords.shape[0], num_atoms - bkb_atoms, 3))
+    sequence_label_exp_1 = sequence_label_exp.unsqueeze(1).expand(-1, coord_label_masked.shape[1]).unsqueeze(2).expand(-1, -1, 3)
+    coord_label_masked[sequence_label_exp_1 == 1] = 0
+    coord_label_masked = torch.cat([coord_label_input, coord_label_masked], dim=1)
+    atom_coords[coord_label_masked == 0] = 0
+    coords = atom_coords.reshape(atom_coords.shape[0] * num_atoms, 3)
+    return coords
+
+
 def mask_nfeats_cb(masked_seq_label, nfeats, nfeats_atoms):
     #print(masked_seq_label.shape, nfeats.shape, nfeats_atoms.shape)
     num_atoms = nfeats_atoms.shape[1]

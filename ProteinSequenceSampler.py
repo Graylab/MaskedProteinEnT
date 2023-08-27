@@ -2,13 +2,10 @@ import os
 import torch
 import glob
 from src.data.constants import num_to_letter, _aa_dict
-from src.utils.command_line_utils import _get_args
-from src.utils.prepare_model_inputs_from_pdb import get_protein_info_from_pdb_file
+from utils.command_line_utils import _get_args
+from utils.prepare_model_inputs_from_pdb import get_protein_info_from_pdb_file
 from src.model.ProteinMaskedLabelModel_EnT_MA import ProteinMaskedLabelModel_EnT_MA
 from utils.metrics import get_recovery_metrics_for_batch
-
-from src.data.MaskedSequenceStructureMADataModule import \
-    MaskedSequenceStructureMADataModule
 
 torch.set_default_dtype(torch.float64)
 torch.set_grad_enabled(False)
@@ -40,16 +37,19 @@ class ProteinSequenceSampler():
         
         self.d_loader = None
         if self.args.from_pdb == '':
+            from src.data.datamodules.MaskedSequenceStructureMADataModule import \
+            MaskedSequenceStructureMADataModule
             datamodule = MaskedSequenceStructureMADataModule(self.args)
             datamodule.setup()
             self.d_loader = datamodule.test_dataloader()
         else:
             assert os.path.exists(self.args.from_pdb)
             if os.path.isdir(self.args.from_pdb):
-                pdb_files = glob.glob(self.args.from_pdb + '.pdb')
+                pdb_files = glob.glob(self.args.from_pdb + '/*.pdb')
             else:
                 pdb_files = [self.args.from_pdb]
             self.d_loader = []
+            print(f'Found {len(pdb_files)} files.')
             for pdb_file in pdb_files:
                 batch = get_protein_info_from_pdb_file(pdb_file)
                 self.d_loader.append(batch)
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     temperatures = [float(t) for t in args.sample_temperatures.split(',')]
     n_samples = [int(t) for t in args.num_samples.split(',')]
     ids = [t for t in args.ids.split(',') if t!='']
-
+    print(temperatures, n_samples)
     for temp in temperatures:
         for N in n_samples:
             psampler.sample(temp=temp, N=N, subset_ids=ids,
