@@ -4,14 +4,13 @@ import torch
 import glob
 import numpy as np
 from tqdm import tqdm
-from src.data.preprocess import generic_interface_text_parser as gen_parser
 from src.data.constants import _aa_dict, letter_to_num
 from src.data.InteractingProteinDataClass \
     import AntibodyTypeInteractingProtein,\
         FragmentedMultiChainInteractingProtein, InteractingPartners
 from src.data.masking_utils import mask_cb_coords, mask_nfeats_cb
 from src.data.ppi_graph_dataset_utils import get_fragmented_partner_pos_indices
-from src.data.utils.pdb import protein_dist_coords_matrix, get_residue_numbering_for_pdb
+from src.data.utils.pdb import protein_dist_coords_matrix, get_residue_numbering_for_pdb, get_indices_dict_for_cdrs
 from src.data.preprocess.antigen_parser import get_chain_lengths, _get_ppi_contact_residues, add_protein_info
 
 from Bio.SeqUtils import seq1
@@ -72,7 +71,9 @@ def protein_data_batcher(id, feats, coords, mask, seqlabel,
 
 
 def get_protein_info_from_pdb_file(pdb_file, max_id_len=40,
-                                   index=0, with_metadata=False):
+                                   index=0, with_metadata=False,
+                                   mask_fraction=1.0,
+                                   label_seq={}):
 
     chain_seqs = dict()
     parser = PDBParser()
@@ -83,6 +84,15 @@ def get_protein_info_from_pdb_file(pdb_file, max_id_len=40,
         seq = seq1(''.join([residue.resname for residue in chain\
                     if 'CA' in residue]))
         chain_seqs.update({chain.id: letter_to_num(seq, _aa_dict)})
+    
+    if label_seq != {}:
+        for ch in chain_seqs:
+            if ch in label_seq:
+                seq_chain = label_seq[ch]
+            else:
+                print(f'DID not find seq for {ch} from pdb_file {pdb_file} in {label_seq}')
+                print('Sequence scores may not be accurate.')
+
     info = {}
     info.update(chain_seqs)
     info.update(dict(id=id))
@@ -111,7 +121,7 @@ def get_protein_info_from_pdb_file(pdb_file, max_id_len=40,
     p0.dist_angle_mat_inputs = p0.dist_angle_mat
 
     sequence_masked_label_p0 = \
-        p0.mask_sequence(contact_percent=1)
+        p0.mask_sequence(contact_percent=mask_fraction)
     nfeats = p0.prim_masked.float()
     sequence_label = sequence_masked_label_p0
     num_res = nfeats.shape[0]
@@ -133,45 +143,40 @@ def get_protein_info_from_pdb_file(pdb_file, max_id_len=40,
 
 def add_ppi_info_full(info,pdb_file,chain_seqs,
                         distance_cutoff=12.0,
-                        partners=[]):
-    
-    logger = logging.getLogger(__name__ + 'add_ppi_info')
-    logger.debug('Adding ppi info ...')
+                        partners=[],
+                        mask_fill_value=-999):
     
     for pi in partners:
         for ch in pi:
             if ch not in chain_seqs.keys():
                 return None
-
+    
     p0, p1 = partners[0], partners[1]
     component_chains_partners = [t for t in p0] + [t for t in p1]
     component_chain_lengths = get_chain_lengths(chain_seqs,
                                                 component_chains_partners)
-
-    try:
-        protein_geometry_mats = protein_dist_coords_matrix(pdb_file,
-                                               component_chains_partners)
-    except:
-        return None
+    l0, l1 = sum([component_chain_lengths[t] for t in p0]), sum([component_chain_lengths[t] for t in p1]) 
+    protein_geometry_mats = protein_dist_coords_matrix(pdb_file,
+                                                       chains=component_chains_partners,
+                                                       mask_fill_value=mask_fill_value)
     
     dist_mat = protein_geometry_mats[0]
     coords = protein_geometry_mats[1]
-    
-    contact_indices_partners = _get_ppi_contact_residues(dist_mat,
-                                                 chain_seqs,
-                                                 partners,
-                                                 distance_cutoff=distance_cutoff)
+    dist_mat_p0_p1 = dist_mat[:l0, l0:]
 
-    print('epi indices {}: {}'.format(p0, contact_indices_partners[p0]))
-    print('epi indices {}: {}'.format(p1, contact_indices_partners[p1]))
+    contact_indices_partners = {}
+    contact_indices_partners[p0] = list(set((np.argwhere((dist_mat_p0_p1 <= distance_cutoff) & 
+                                     (dist_mat_p0_p1 != mask_fill_value) )[0]).tolist()))
+    contact_indices_partners[p1] = list(set((np.argwhere((dist_mat_p0_p1 <= distance_cutoff) & 
+                                     (dist_mat_p0_p1 != mask_fill_value) )[1]).tolist()))
+
+    #print('epi indices {}: {}'.format(p0, contact_indices_partners[p0]))
+    #print('epi indices {}: {}'.format(p1, contact_indices_partners[p1]))
     for pi in partners:
         if len(contact_indices_partners[pi]) == 0:
             return None
-    #Convert contacts to contiguous ranges
-    # [1,2,3,7,8,9,11] -> [(1,3), (7-11)] etc.
-    lengths = get_chain_lengths(chain_seqs, partners)
     
-    logger.debug('chain lengths: {}\n'.format(lengths))
+    lengths = get_chain_lengths(chain_seqs, partners)
     
     info.update(
     dict(dist_mat=dist_mat.unsqueeze(0)))
@@ -195,6 +200,9 @@ def add_ppi_info_full(info,pdb_file,chain_seqs,
             offset = 100 if chain_num > 0 else 0
             pdb_indices[partner] += [t+offset for t in pdb_residue_ids_dict[chain]]
             prev_len += len(chain_seqs[chain])
+            print(partner, len(chain_seqs[chain]))
+        print(partner, frag_indices[partner])
+        print(contact_indices_partners[partner])
         rel_contact_indices[partner] = [frag_indices[partner].index(ind)
                                         for ind in contact_indices_partners[partner]]
         frag_indices_pdb[partner] = [pdb_indices[partner][t] for t in frag_indices[partner]]
@@ -213,14 +221,14 @@ def get_ppi_info_from_pdb_file(pdb_file, max_id_len=40,
                                index=0, with_metadata=False,
                                partners=[],
                                mr_p0=1,
-                               mr_p1=0,
-                               use_pseudo_cb=False):
+                               mr_p1=0):
     
     chain_seqs = dict()
     parser = PDBParser()
     id=os.path.basename(pdb_file)[:-4][:max_id_len]
     structure = parser.get_structure(id, pdb_file)
-
+    partner_chains = [u for u in t for t in partners]
+    
     for chain in structure.get_chains():
         skip_chain = False
         seq = seq1(''.join([residue.resname for residue in chain\
@@ -230,8 +238,9 @@ def get_ppi_info_from_pdb_file(pdb_file, max_id_len=40,
                 skip_chain = True
         if skip_chain:
             continue
-        if chain.id in partners:
+        if chain.id in partner_chains:
             chain_seqs.update({chain.id: letter_to_num(seq, _aa_dict)})
+    
     for partner in partners:
         for chain in partner:
             if not chain in chain_seqs:
@@ -241,16 +250,14 @@ def get_ppi_info_from_pdb_file(pdb_file, max_id_len=40,
     info.update(dict(id=id))
     if len(chain_seqs.keys())==2:
         partners = list(chain_seqs.keys())
+    
     info = add_ppi_info_full(info, pdb_file, chain_seqs,
                         distance_cutoff=12.0,
                         partners=partners)
     
     if info is None:
         return
-    '''dict_keys(['C', 'D', 'id', 'dist_angle_mat', 
-    'phi_psi_mat', 'bk_and_cb_coords', 'chain_contact_indices_p0', 
-    'chain_contact_indices_p1', 'p0_prim', 'p1_prim', 'frag_indices_p0', 'frag_indices_p1'])
-    '''
+    
     chain_breaks = []
     length = 0
     for partner in partners:
@@ -338,7 +345,7 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
     parser = PDBParser()
     id=os.path.basename(pdb_file)[:-4][:max_id_len]
     structure = parser.get_structure(id, pdb_file)
-
+    partner_chains = [u for t in partners for u in t ]
     for chain in structure.get_chains():
         skip_chain = False
         seq = seq1(''.join([residue.resname for residue in chain\
@@ -348,7 +355,7 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
                 skip_chain = True
         if skip_chain:
             continue
-        if chain.id in partners:
+        if chain.id in partner_chains:
             chain_seqs.update({chain.id: letter_to_num(seq, _aa_dict)})
     
     for partner in partners:
@@ -386,7 +393,7 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
     ag_chains = partners[1]
     antigen_prim = [t for chain in ag_chains for t in chain_seqs[chain]]
 
-    ab_len = sum(len(heavy_prim) + len(light_prim))
+    ab_len = len(heavy_prim) + len(light_prim)
     ag_len = len(antigen_prim)
 
     ab_contact_indices = info['chain_contact_indices_p0']
@@ -398,7 +405,7 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
     cdr_names = ['h1', 'h2', 'h3']
     if light_chain != '':
         cdr_names += ['l1', 'l2', 'l3']
-    cdr_indices = gen_parser.get_indices_dict_for_cdrs(pdb_file, per_chain_dict=False)
+    cdr_indices = get_indices_dict_for_cdrs(pdb_file, per_chain_dict=False)
     cdrs = [indices for cdr_name, indices in cdr_indices.items()]
 
     ab = AntibodyTypeInteractingProtein(index,
@@ -425,7 +432,7 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
     
     mask_residue_selection = None
     if partner_selection == 'Ab' or partner_selection=='both':
-        if mask_ab_region != None:
+        if not mask_ab_region is None:
             if mask_ab_region == 'non-cdr':
                 all_indices = [t for t in range(ab.seq_len)]
                 mask_residue_selection = [t for t in all_indices 
@@ -446,9 +453,9 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
                     (region in ab.cdr_indices_dict):
                     mask_residue_selection = ab.cdr_indices_dict[region]
                     break
-        if mask_ab_indices != None:
+        if not mask_ab_indices is None:
             mask_residue_selection = mask_ab_indices
-        
+
     sequence_masked_label_p0 = \
         ab.mask_sequence(contact_percent=mr_p0,
                         subset_selection_indices=mask_residue_selection,
@@ -491,7 +498,10 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
 
 
 def get_antibody_info_from_pdb_file(pdb_file, max_id_len=40,
-                                   index=0, with_metadata=False):
+                                    mr=1.0,
+                                    index=0, with_metadata=False,
+                                    mask_ab_region=None,
+                                    mask_ab_indices=None):
 
     chain_seqs = dict()
     parser = PDBParser()
@@ -519,20 +529,66 @@ def get_antibody_info_from_pdb_file(pdb_file, max_id_len=40,
         fragment_indices += [t+offset for t in range(len(info[chain]))]
     
     assert len(fragment_indices) == sequence_len
-    p0 = FragmentedMultiChainInteractingProtein(
-            index,
-            'protein',
-            id,
-            contact_indices=torch.tensor([t for t in range(sequence_len)]).long(),
-            fragment_indices=torch.tensor(fragment_indices).long(),
-            prim=prim,
-            dist_angle_mat=info['dist_mat'])
-    p0.to_one_hot()
-    p0.dist_angle_mat_inputs = p0.dist_angle_mat
+
+    ab_chains = list(chain_seqs.keys())
+    heavy_chain = ab_chains[0]
+    heavy_prim = chain_seqs[heavy_chain]
+    light_chain = ''
+    light_prim = []
+    if len(ab_chains)==2:
+        light_chain = ab_chains[1]
+        light_prim = chain_seqs[light_chain]
+    
+    ab_len = len(heavy_prim) + len(light_prim)
+
+    cdr_names = ['h1', 'h2', 'h3']
+    if light_chain != '':
+        cdr_names += ['l1', 'l2', 'l3']
+    cdr_indices = get_indices_dict_for_cdrs(pdb_file, per_chain_dict=False)
+    cdrs = [indices for cdr_name, indices in cdr_indices.items()]
+
+    ab = AntibodyTypeInteractingProtein(index,
+                                        'ab',
+                                        id,
+                                        heavy_prim,
+                                        light_prim,
+                                        cdrs=cdrs,
+                                        cdr_names=cdr_names)
+    mask_residue_selection = None
+    if not mask_ab_region is None:
+        if mask_ab_region == 'non-cdr':
+            all_indices = [t for t in range(ab.seq_len)]
+            mask_residue_selection = [t for t in all_indices 
+                                        if t not in ab.loop_indices.tolist()]
+
+        if mask_ab_region == 'cdrs':
+            all_indices = [t for t in range(ab.seq_len)]
+            mask_residue_selection = [t for t in all_indices 
+                                        if t in ab.loop_indices.tolist()]
+        
+        if mask_ab_region == 'non-contact':
+            all_indices = [t for t in range(ab.seq_len)]
+            mask_residue_selection = [t for t in all_indices 
+                                        if t not in ab.contact_indices.tolist()]
+
+        for region in ['h1', 'h2', 'h3', 'l1', 'l2', 'l3']:
+            if region == mask_ab_region and \
+                (region in ab.cdr_indices_dict):
+                mask_residue_selection = ab.cdr_indices_dict[region]
+                break
+    if not mask_ab_indices is None:
+        mask_residue_selection = mask_ab_indices
+
+    ab.set_contact_indices(torch.tensor([t for t in range(sequence_len)]).long())
+    
+    ab.to_one_hot()
+    ab.dist_angle_mat_inputs = ab.dist_angle_mat
 
     sequence_masked_label_p0 = \
-        p0.mask_sequence(contact_percent=1)
-    nfeats = p0.prim_masked.float()
+        ab.mask_sequence(contact_percent=mr,
+                        subset_selection_indices=mask_residue_selection,
+                        non_contact_percent=0)
+    nfeats = ab.prim_masked.float()
     sequence_label = sequence_masked_label_p0
     num_res = nfeats.shape[0]
     coords = torch.tensor(info['bk_and_cb_coords']).permute(1, 0, 2)
@@ -546,7 +602,7 @@ def get_antibody_info_from_pdb_file(pdb_file, max_id_len=40,
     assert coords is not None
     coords = mask_cb_coords(sequence_label, coords)
     missing_residues_mask = torch.ones((nfeats.shape[0])).long()
-    batch = protein_data_batcher(p0.id, nfeats, coords, missing_residues_mask,
+    batch = protein_data_batcher(ab.id, nfeats, coords, missing_residues_mask,
                         sequence_label, seq_positions, {}, with_metadata=with_metadata)
     return batch
 

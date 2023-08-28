@@ -2,12 +2,10 @@ from os import listdir
 from os.path import join
 
 
-from deeph3.preprocess.antigen_parser import add_antigen_info, add_protein_info,\
+from src.data.preprocess.antigen_parser import add_antigen_info, add_protein_info,\
                                              ag_chains_ids_mod
-from deeph3.preprocess.ppi_parser import add_ppi_info
-#from deeph3.util.rosetta_interface_utils import get_pair_map, get_partners
-from deeph3.preprocess.fragment_utils import *
-from deeph3.preprocess.parsing_utils import get_cdr_indices, get_chain_seqs,\
+from src.data.preprocess.ppi_parser import add_ppi_info
+from src.data.preprocess.parsing_utils import get_cdr_indices, get_chain_seqs,\
                                             get_chain_seqs_from_pdb, get_id
 
 
@@ -85,88 +83,3 @@ def antibody_db_seq_info(fasta_dir,antigen_present=False):
     return seq_info_dict
 
 
-def get_info(pdb_file,
-             fasta_file=None,
-             antigen_info=False,
-             distance_cutoff=14,
-             loops_only_interface=True,
-             include_epitope_neighbors=False,
-             distance_cutoff_epitope=12,
-             write_trunc_pdbs=False,
-             use_ppi_data=False,
-             partners='',
-             max_length=350,
-             min_interface_dist=False,
-             use_pairwise_geometry=False,
-             average_ha_dist=True,
-             get_cb_coords=False,
-             get_bk_cb_coords=False,
-             get_fullatom=False,
-             add_per_res=False,
-             ab_chains=['H', 'L'],
-             do_not_truncate=False
-             ):
-
-    info = {}
-    if fasta_file is not None:
-        chain_seqs = get_chain_seqs(fasta_file)
-    else:
-        try:
-            chain_seqs = get_chain_seqs_from_pdb(pdb_file,
-                                                 antigen_info=antigen_info,
-                                                 ab_chains=ab_chains)
-        except:
-            return None
-    
-    if not use_ppi_data:
-        cdr_indices = get_indices_dict_for_cdrs(pdb_file, per_chain_dict=False)
-        info.update(cdr_indices)
-        chain_lengths = {}
-        for key in chain_seqs:
-            chain_lengths[key] = len(chain_seqs[key])
-        info.update(chain_seqs)
-        id_ = get_id(pdb_file)
-        info.update(dict(id=id_))
-        if not antigen_info:
-            info = add_protein_info(info, pdb_file, chain_seqs,
-                                    use_pairwise_geometry=use_pairwise_geometry,
-                                    get_cb_coords=get_cb_coords,
-                                    get_bk_and_cb_coords=get_bk_cb_coords,
-                                    get_fullatom=get_fullatom,
-                                    add_per_res=add_per_res)
-        else:
-            info.update(dict(antigen_info=antigen_info))
-            info = add_antigen_info(info, pdb_file, chain_seqs, cdr_indices,
-                                    distance_cutoff=distance_cutoff,
-                                    loops_only_interface=loops_only_interface,
-                                    include_epitope_neighbors=include_epitope_neighbors,
-                                    distance_cutoff_epitope=distance_cutoff_epitope,
-                                    write_trunc_pdbs=write_trunc_pdbs,
-                                    min_interface_dist=min_interface_dist,
-                                    average_ha_dist=average_ha_dist,
-                                    use_pairwise_geometry=use_pairwise_geometry,
-                                    get_cb_coords=get_cb_coords,
-                                    get_bk_and_cb_coords=get_bk_cb_coords,
-                                    get_fullatom=get_fullatom,
-                                    add_per_res=add_per_res
-                                    )
-    else:
-        info.update(dict(use_ppi_data=use_ppi_data))
-        info = add_ppi_info(info, pdb_file, chain_seqs,
-                            distance_cutoff=distance_cutoff,
-                            include_epitope_neighbors=include_epitope_neighbors,
-                            distance_cutoff_epitope=distance_cutoff_epitope,
-                            write_trunc_pdbs=write_trunc_pdbs,
-                            partners=partners,
-                            max_length=max_length,
-                            min_interface_dist=min_interface_dist,
-                            average_ha_dist=average_ha_dist,
-                            use_pairwise_geometry=use_pairwise_geometry,
-                            get_cb_coords=get_cb_coords,
-                            get_bk_and_cb_coords=get_bk_cb_coords,
-                            get_fullatom=get_fullatom,
-                            add_per_res=add_per_res,
-                            do_not_truncate=do_not_truncate
-                            )
-    
-    return info

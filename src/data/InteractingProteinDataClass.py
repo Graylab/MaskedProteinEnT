@@ -1,6 +1,6 @@
 from src.data.ppi_graph_dataset_utils import select_contact_indices
                                                     
-from src.data.pdb import cdr_indices_from_chothia_numbering, renumber_seq
+from src.data.utils.pdb import cdr_indices_from_chothia_numbering, renumber_seq
 import torch
 import math
 import numpy as np
@@ -70,6 +70,7 @@ class MultiChainInteractingProtein():
 
         mask = torch.ones((prim.shape[0]))
         num_cont_indices = len(self.contact_indices)
+        
         if subset_selection_indices is None:
             num_masked_res = int(num_cont_indices * contact_percent)
             sel_cont_indices = \

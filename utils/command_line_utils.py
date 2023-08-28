@@ -83,11 +83,11 @@ def _get_args():
                         help='dictionary mapping pdbfile basename to partner chains separated by underscore')
     parser.add_argument('--sample_temperatures',
                         type=str,
-                        default='0.1,0.2,1.0',
+                        default='0.1,0.5',
                         help='comma separted string of temperatures to sample sequences')
     parser.add_argument('--num_samples',
                         type=str,
-                        default='100',
+                        default='20',
                         help='string or comma separted string of number of samples')
     parser.add_argument('--mask_ab_indices',
                         type=str,

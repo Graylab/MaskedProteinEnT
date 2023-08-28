@@ -64,6 +64,11 @@ class PPISequenceSampler():
         self.args.train_split = 0
         self.args.shuffle_dataset=False
         self.args.masking_rate_max = mr
+        if self.args.antibody:
+            self.region_selection = self.args.mask_ab_region
+        
+        self.outdir = self.args.output_dir
+        os.makedirs(self.outdir, exist_ok=True)
 
 
     def get_dataloader(self, partner_selection='Ab', output_indices=False, 
@@ -78,8 +83,8 @@ class PPISequenceSampler():
                                     mr_min=mr_min,
                                     partner_selection=partner_selection,
                                     with_metadata=False,
-                                    region_selection=args.mask_ab_region,
-                                    intersect_with_contacts=args.contact_residues_only)
+                                    region_selection=self.region_selection,
+                                    intersect_with_contacts=self.args.contact_residues_only)
         else:
             assert os.path.exists(self.args.from_pdb)
             assert os.path.exists(self.args.partners_json)
@@ -116,14 +121,17 @@ class PPISequenceSampler():
                 else:
                     continue
                 if args.antibody:
+                    args.mask_ab_region = None if args.mask_ab_region == '' else args.mask_ab_region
+                    args.mask_ab_indices = None if args.mask_ab_indices == '' else args.mask_ab_indices
                     batch = get_abag_info_from_pdb_file(pdb_file,
                                                         partners=partners,
                                                         mr_p0=mr_p0,
                                                         mr_p1=mr_p1,
                                                         partner_selection=partner_selection,
-                                                        mask_ab_region=mask_ab_region,
-                                                        mask_ab_indices=args.mask_ab_region,
-                                                        assert_contact=args.contact_residues_only
+                                                        mask_ab_region=args.mask_ab_region,
+                                                        mask_ab_indices=args.mask_ab_indices,
+                                                        assert_contact=args.contact_residues_only,
+                                                        with_metadata=True
                                                         )
                 else:
                     batch = get_ppi_info_from_pdb_file(pdb_file, partners=partners,
@@ -134,9 +142,10 @@ class PPISequenceSampler():
                     continue
                 self.d_loader.append(batch)
         
-        self.outdir = self.args.output_dir
         self.lengths_dict = {}
         self.chain_breaks = {}
+        contact_res_indices_p0 = {}
+        contact_res_indices_p1 = {}
         with torch.no_grad():
             for batch in self.d_loader:
                 id, _, metadata = batch
@@ -144,10 +153,21 @@ class PPISequenceSampler():
                 if (subset_ids != []) and (not cleanid in subset_ids):
                     print('continuing', cleanid)
                     continue
-                self.lengths_dict[cleanid] = metadata[0]['p0_len']
+                if args.antibody:
+                    self.lengths_dict[cleanid] = metadata[0]['Ab_len']
+                else:
+                    self.lengths_dict[cleanid] = metadata[0]['p0_len']
                 self.chain_breaks[cleanid] = []
                 if 'chain_breaks' in metadata[0]:
                     self.chain_breaks[cleanid] = metadata[0]['chain_breaks']
+                if 'noncontact_mask' in metadata[0]:
+                    contact_res_mask = metadata[0]['noncontact_mask']
+                    contact_res_indices_p0[cleanid] = ','.join([str(t) 
+                    for t in contact_res_mask.nonzero().flatten().tolist()
+                    if t < self.lengths_dict[cleanid]])
+                    contact_res_indices_p1[cleanid] = ','.join([str(t) 
+                    for t in contact_res_mask.nonzero().flatten().tolist()
+                    if t >= self.lengths_dict[cleanid]])
 
 
     def sample(self, temp=1.0, N=100, 

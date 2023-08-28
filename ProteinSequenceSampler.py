@@ -3,7 +3,8 @@ import torch
 import glob
 from src.data.constants import num_to_letter, _aa_dict
 from utils.command_line_utils import _get_args
-from utils.prepare_model_inputs_from_pdb import get_protein_info_from_pdb_file
+from utils.prepare_model_inputs_from_pdb import get_protein_info_from_pdb_file,\
+get_antibody_info_from_pdb_file
 from src.model.ProteinMaskedLabelModel_EnT_MA import ProteinMaskedLabelModel_EnT_MA
 from utils.metrics import get_recovery_metrics_for_batch
 
@@ -51,9 +52,13 @@ class ProteinSequenceSampler():
             self.d_loader = []
             print(f'Found {len(pdb_files)} files.')
             for pdb_file in pdb_files:
-                batch = get_protein_info_from_pdb_file(pdb_file)
+                if args.antibody:
+                    batch = get_antibody_info_from_pdb_file(pdb_file)
+                else:
+                    batch = get_protein_info_from_pdb_file(pdb_file)
                 self.d_loader.append(batch)
         self.outdir = self.args.output_dir
+        os.makedirs(self.outdir, exist_ok=True)
 
 
     def sample(self, temp=1.0, N=100, write_fasta_for_colab_argmax=False,

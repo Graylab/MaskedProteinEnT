@@ -306,6 +306,28 @@ def cdr_indices_from_chothia_numbering(residue_id_nums, cdr, h_len, chain_id):
 
     return cdr_start, cdr_end
 
+def pdb2fasta(pdb_file, num_chains=None):
+    """Converts a PDB file to a fasta formatted string using its ATOM data"""
+    pdb_id = basename(pdb_file).split('.')[0]
+    parser = PDBParser()
+    structure = parser.get_structure(pdb_id, pdb_file)
+    structure = structure[0]
+
+    real_num_chains = len([0 for _ in structure.get_chains()])
+    if num_chains is not None and num_chains != real_num_chains:
+        print('WARNING: Skipping {}. Expected {} chains, got {}'.format(
+            pdb_file, num_chains, real_num_chains))
+        return ''
+
+    fasta = ''
+    for chain in structure.get_chains():
+        id_ = chain.id
+        seq = seq1(''.join([residue.resname for residue in chain]))
+        fasta += '>{}:{}\t{}\n'.format(pdb_id, id_, len(seq))
+        max_line_length = 80
+        for i in range(0, len(seq), max_line_length):
+            fasta += f'{seq[i:i + max_line_length]}\n'
+    return fasta
 
 
 def cdr_indices(chothia_pdb_file, cdr):

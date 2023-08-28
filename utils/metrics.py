@@ -14,7 +14,10 @@ def get_cleanid_from_numpy_string(id):
 def get_recovery_metrics_for_batch(batch, model, temp, N):
     import random
     random.seed(random.randrange(100000))
-    id, (nfeats, coords, _, mask, labels, pos_indices) = batch
+    if len(batch) == 3:
+        id, (nfeats, coords, _, mask, labels, pos_indices), _ = batch
+    else:
+        id, (nfeats, coords, _, mask, labels, pos_indices) = batch
     labels = labels.cpu()
     nfeats_residues = nfeats.clone().reshape(nfeats.shape[0], labels.shape[0], -1,
                                              nfeats.shape[-1]

@@ -13,7 +13,7 @@ def collate_function_getter(with_metadata=False):
         return SCNProteinMaskedMultiAtomDatasetBatched.merge_samples_to_minibatch_with_metadata
 
 
-def _helper_loader(dataset, args, with_metadata=False)
+def _helper_loader(dataset, args, with_metadata=False):
     return torch.utils.data.DataLoader(
     dataset,
     shuffle=args.shuffle_dataset,

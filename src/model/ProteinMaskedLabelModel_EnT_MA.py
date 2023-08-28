@@ -3,9 +3,8 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 from torchmetrics import MetricCollection, Accuracy
-from src.models.en_transformer.en_transformer import EnTransformer
-from src.models.ProteinMaskedLabelModel.MaskedModelMetrics import LocalAccuracy
-from src.models.ProteinMaskedLabelModel.Schedulers import CosineWarmupScheduler
+from src.model.en_transformer.en_transformer import EnTransformer
+from src.model.MaskedModelMetrics import LocalAccuracy
 
 '''
 EnTransformer (Attention adaptation of EGNN)
@@ -148,36 +147,20 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
     def configure_optimizers(self):
         
-        if self.lr_scheduler == "cosine":
-                optimizer_adam = \
-                torch.optim.Adam(self.parameters(),
-                             lr=self.init_lr, weight_decay=self.weight_decay)
-                lr_scheduler = {
-                'scheduler': \
-                CosineWarmupScheduler(optimizer=optimizer_adam, warmup=self.warmup, 
-                                        max_iters=self.max_iters),
-                'interval': 'step',
-                'name': 'lr'
-                }
-        #elif self.lr_scheduler == "onecycle":
-        #        optimizer_adam = \
-        #        torch.optim.SGD(self.parameters(),
-        #                     lr=self.init_lr, weight_decay=self.weight_decay)
-        else:
-                optimizer_adam = \
-                torch.optim.Adam(self.parameters(),
-                             lr=self.init_lr, weight_decay=self.weight_decay)
-                lr_scheduler = {
-                'scheduler': \
-                torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_adam,
-                                                                verbose=True,
-                                                                min_lr=0.0000001,
-                                                                cooldown=self.cooldown,
-                                                                patience=self.patience,
-                                                                factor=0.1),
-                'monitor': 'val_loss', #apply on validation loss
-                'name': 'lr'
-                }
+        optimizer_adam = \
+        torch.optim.Adam(self.parameters(),
+                        lr=self.init_lr, weight_decay=self.weight_decay)
+        lr_scheduler = {
+        'scheduler': \
+        torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_adam,
+                                                        verbose=True,
+                                                        min_lr=0.0000001,
+                                                        cooldown=self.cooldown,
+                                                        patience=self.patience,
+                                                        factor=0.1),
+        'monitor': 'val_loss', #apply on validation loss
+        'name': 'lr'
+        }
         return {'optimizer': optimizer_adam, 'lr_scheduler': lr_scheduler}
 
     def training_step(self, batch, batch_idx):

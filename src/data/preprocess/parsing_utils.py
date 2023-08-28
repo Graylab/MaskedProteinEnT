@@ -4,7 +4,6 @@ from Bio.PDB import PDBParser
 from src.data.constants import letter_to_num, _aa_dict, _aa_3_1_dict, num_to_letter
 from src.data.utils.pdb import get_pdb_atoms
 from os.path import basename, splitext
-import logging
 from Bio.PDB.Polypeptide import PPBuilder
 
 def get_id(pdb_file_path):
@@ -96,77 +95,6 @@ def get_cdr_indices(pdb_file_path):
                 l2=l2_idxs,
                 l3=l3_idxs)
 
-def is_good_sequence(pdb_file):
-    parser = PDBParser()
-    structure = parser.get_structure(get_id(pdb_file), pdb_file)
-    seq=''
-    for chain in structure.get_chains():
-        seq += seq1(''.join([residue.resname for residue in chain]))
-    #print(seq)
-    if 'X' in seq:
-        print("Bad sequence: ",seq)
-        return False
-    return True
-
-def check_HL_chains(pdb_file):
-    parser = PDBParser()
-    structure = parser.get_structure(get_id(pdb_file), pdb_file)
-    ids=[]
-    bH = False
-    bL = False
-    for chain in structure.get_chains():
-        ids.append(chain.id)
-    if ('H' in ids):
-        bH = True
-    if ('L' in ids):
-        bL = True
-    return bH,bL
-
-def check_pdb_file(pdb_file,h_len,l_len, ag_chains_ids, ab_chains_dict=None):
-    parser = PDBParser()
-    structure = parser.get_structure(get_id(pdb_file), pdb_file)
-    ids=[]
-    bH = False
-    bL = False
-    for chain in structure.get_chains():
-        ids.append(chain.id)
-    h_chain_id = 'H'
-    l_chain_id = 'L'
-    if ab_chains_dict is not None:
-        if 'H' in ab_chains_dict:
-            h_chain_id = ab_chains_dict['H']
-        if 'L' in ab_chains_dict:
-            l_chain_id = ab_chains_dict['L']
-    if (h_chain_id in ids):
-        bH = True
-    if (l_chain_id in ids):
-        bL = True
-    seq=''
-    bgood=True
-    blen=True
-    ag_seq_len=0
-    h_seq_len=0
-    l_seq_len=0
-    for chain in structure.get_chains():
-        id_ = chain.id
-        seq_cur = seq1(''.join([residue.resname for residue in chain]))
-        seq += seq_cur
-        #dont check for ag len - we only use ag fragments not full ag
-        if id_ in ag_chains_ids:
-            ag_seq_len += len(seq_cur)
-        if id_ == h_chain_id:
-            h_seq_len = len(seq_cur)
-        if id_ == l_chain_id:
-            l_seq_len = len(seq_cur)
-    if h_seq_len>h_len or l_seq_len>l_len:
-        blen=False
-    if 'X' in seq:
-        print("Bad sequence: ",seq)
-        bgood=False
-    
-    return bH,bL,bgood,blen,h_seq_len,l_seq_len, ag_seq_len
-
-
 def get_chain_seqs_from_pdb(pdb_file, antigen_info=False, ab_chains=['H', 'L'], 
                             skip_nonstandard=True):
     
@@ -197,8 +125,6 @@ def get_chain_seqs_from_pdb(pdb_file, antigen_info=False, ab_chains=['H', 'L'],
                             seqlist[x_id] = _aa_3_1_dict[nonstd_aa]
                         else:
                             # only for carb-prot dataset
-                            logger = logging.getLogger(__name__ + '_non_standard_aa_')
-                            logger.info('{}, {}, {}, {}\n'.format(get_id(pdb_file), id_, x_id, pdb_file))
                             seqlist[x_id] = 'A'
             seq = ''.join(seqlist)
             assert 'X' not in seq
