@@ -77,6 +77,14 @@ def _get_args():
                         type=str,
                         default='',
                         help='load info from pdb file instead of h5 file')
+    parser.add_argument('--pdb_file',
+                        type=str,
+                        default='',
+                        help='pdb file with structure')
+    parser.add_argument('--sequences_file',
+                        type=str,
+                        default='',
+                        help='txt file with 1 sequence per line for scoring')
     parser.add_argument('--partners_json',
                         type=str,
                         default='',
