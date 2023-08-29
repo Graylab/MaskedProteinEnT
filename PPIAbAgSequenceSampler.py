@@ -11,6 +11,7 @@ from src.data.constants import num_to_letter, _aa_dict
 from utils.prepare_model_inputs_from_pdb \
                 import get_ppi_info_from_pdb_file, get_abag_info_from_pdb_file
 from utils.command_line_utils import _get_args
+from io.ppi_sequence_writer import PPISequenceWriter
 import sys
 
 torch.set_default_dtype(torch.float64)
@@ -24,30 +25,6 @@ def get_cleanid_from_numpy_string(id):
     cleanid= str(id)[2:-1]
     return cleanid
 
-def get_multimer_seq_from_array(seq, p0_len, chain_breaks = [], insert_char=':'):
-    #print(len(seq), p0_len)
-    letter_seq = num_to_letter(seq, _aa_dict)
-    if chain_breaks == []:
-        return letter_seq[:p0_len] + insert_char + letter_seq[p0_len:] + '\n'
-    else:
-        seq_list = [t for t in letter_seq]
-        for position in reversed(chain_breaks):
-            if position < len(seq_list):
-                seq_list.insert(position, ':')
-        seq_string = ''.join(seq_list)
-        #print([len(t) for t in seq_string.split(':')])
-        return seq_string +'\n'
-
-
-def get_seq_from_array(seq, p0_len, insert_char='', partner_selection='Ab'):
-    letter_seq = num_to_letter(seq, _aa_dict)
-    if partner_selection == 'Ab':
-        return letter_seq[:p0_len] + '\n'
-    elif partner_selection == 'Ag':
-        return letter_seq[p0_len:] + '\n'
-    else:
-        return letter_seq[:p0_len] + insert_char + letter_seq[p0_len:] + '\n'
-
 
 class PPISequenceSampler():
     def __init__(self, args, mr=1.0):
@@ -59,8 +36,6 @@ class PPISequenceSampler():
         self.model = ProteinMaskedLabelModel_EnT_MA.load_from_checkpoint(self.args.model).to(device)
         self.model.freeze()
         
-        self.write_sequences = True
-
         self.args.train_split = 0
         self.args.shuffle_dataset=False
         self.args.masking_rate_max = mr
@@ -68,8 +43,6 @@ class PPISequenceSampler():
             self.region_selection = self.args.mask_ab_region
         
         self.outdir = self.args.output_dir
-        os.makedirs(self.outdir, exist_ok=True)
-
 
     def get_dataloader(self, partner_selection='Ab', output_indices=False, 
                         subset_ids=[], max_samples=None):
@@ -168,6 +141,9 @@ class PPISequenceSampler():
                     contact_res_indices_p1[cleanid] = ','.join([str(t) 
                     for t in contact_res_mask.nonzero().flatten().tolist()
                     if t >= self.lengths_dict[cleanid]])
+        
+        self.sequence_writer = PPISequenceWriter(self.outdir, self.chain_breaks, partner_selection)
+
 
 
     def sample(self, temp=1.0, N=100, 
@@ -191,113 +167,26 @@ class PPISequenceSampler():
         
         seqrec_sampled_dict = {}
         seqrec_argmax_dict= {}
-        perplexity_dict = {}
         total_nodes = {}
         with torch.no_grad():
             ids_seen = []
             for batch in self.d_loader:
                 id, _, _ = batch
                 cleanid= get_cleanid_from_numpy_string(id[0])
-                print(cleanid)
                 if subset_ids != []:
                     if not cleanid in subset_ids:
                         continue
                 if cleanid in ids_seen:
                     continue
-                print(cleanid)
                 
                 recovery_dict = \
                     get_recovery_metrics_for_batch(batch, self.model, temp, N)
+                print(cleanid, recovery_dict['seqrecargmax'])
                 seqrec_argmax_dict[cleanid] = recovery_dict['seqrecargmax']
                 seqrec_sampled_dict[cleanid] = recovery_dict['seqrecsampled_all']
-                sequence_wt = recovery_dict['wt']
-                
-                total_nodes[cleanid] = recovery_dict['total_nodes']
-                loss = recovery_dict['loss']
-                perplexity_dict[cleanid] = float(np.exp(loss.cpu().numpy()))
-                sequence_argmax = recovery_dict['sequence_argmax']
-                sequences_sampled = recovery_dict['sequences_sampled']
-                comma_separated_outstr = f'pdbid={cleanid},total_nodes={total_nodes[cleanid]},perplexity={perplexity_dict[cleanid]},score={loss},'
-                comma_separated_outstr += f'recovery={{}}'
-                
-                p0_len = self.lengths_dict[cleanid]
-                insert_char=''
-                if partner_selection=='both':
-                    insert_char=':'
-                outstr = '>seqwildtype\n'
-                outstr += get_seq_from_array(sequence_wt, p0_len, insert_char=insert_char, 
-                                             partner_selection=partner_selection)
-                outstr += f'>seqargmax,T=0,'+comma_separated_outstr.format(seqrec_argmax_dict[cleanid])+'\n'
-                outstr += get_seq_from_array(sequence_argmax, p0_len, insert_char=insert_char, 
-                                             partner_selection=partner_selection)
-                for j, (seq, rec) in enumerate(zip(sequences_sampled, seqrec_sampled_dict[cleanid])):
-                    outstr += f'>seq{j},T={temp},'+comma_separated_outstr.format(rec)+'\n'
-                    outstr += get_seq_from_array(seq, p0_len, insert_char=insert_char, 
-                                                 partner_selection=partner_selection)
-                
-                if not ( write_fasta_for_colab_sampled or write_fasta_for_colab_argmax):
-                    outdir = f'{self.outdir}/{cleanid}'
-                    os.makedirs(outdir, exist_ok=True)
-                    outfile_sampled = f'{outdir}/{cleanid}_sequences_sampled_temp{temp}_N{N}_{partner_name}.fasta'
-                    if not os.path.exists(outfile_sampled):
-                        print('Writing ', outfile_sampled)
-                        with open(outfile_sampled, 'w') as f:
-                            f.write(outstr)
-                    else:
-                        print(f'{outfile_sampled} exists. Will not overwrite !!!')
-                    outfile_argmax = f'{outdir}/{cleanid}_sequences_argmax_{partner_name}.fasta'
-                    outstr = '>seqwildtype\n'
-                    outstr += get_seq_from_array(sequence_wt, p0_len, insert_char=insert_char, 
-                                                partner_selection=partner_selection)
-                    outstr += f'>seqargmax,T=0,'+comma_separated_outstr.format(seqrec_argmax_dict[cleanid])+'\n'
-                    outstr += get_seq_from_array(sequence_argmax, p0_len, insert_char=insert_char, 
-                                    partner_selection=partner_selection)
-                    with open(outfile_argmax, 'w') as f:
-                        f.write(outstr)
-                    os.makedirs(f'{outdir}/wildtype/', exist_ok=True)
-                    outfile_wt = f'{outdir}/wildtype/{cleanid}_wildtype.fasta'
-                    outstr = f'>seqwildtype_{partner_name}\n'
-                    outstr += get_seq_from_array(sequence_wt, p0_len, insert_char=insert_char, 
-                                                partner_selection=partner_selection)
-                    with open(outfile_wt, 'w') as f:
-                        f.write(outstr)
-                
-                chain_breaks = self.chain_breaks[cleanid]
-                if write_fasta_for_colab_sampled:
-                    # Sampled
-                    colab_file = f'{self.outdir}/sampled_multimer_colab_{partner_name}_temp{temp}/{cleanid}_seq{{}}_sampled_temp{temp}_{partner_name}.fasta'
-                    os.makedirs(f'{self.outdir}/sampled_multimer_colab_{partner_name}_temp{temp}', exist_ok=True)
-                    for j, (seq, rec) in enumerate(zip(sequences_sampled, seqrec_sampled_dict[cleanid])):
-                        outstr = f'>seq{j},T={temp},'+comma_separated_outstr.format(rec)+'\n'
-                        outstr += get_multimer_seq_from_array(seq, p0_len,  
-                                                              chain_breaks=chain_breaks)
-                        with open(colab_file.format(j), 'w') as f:
-                            f.write(outstr)
-                
-                if write_fasta_for_colab_argmax:
-                    colab_file = f'{self.outdir}/argmax_multimer_colab_{partner_name}/{cleanid}_argmax_temp0_{partner_name}.fasta'
-                    if not os.path.exists(colab_file):
-                        os.makedirs(f'{self.outdir}/argmax_multimer_colab_{partner_name}/', exist_ok=True)
-                        outstr = f'>seqargmax_{cleanid},T=0,'+comma_separated_outstr.format(seqrec_argmax_dict[cleanid])+'\n'
-                        outstr += get_multimer_seq_from_array(sequence_argmax, p0_len, 
-                                                              chain_breaks=chain_breaks)
-                        with open(colab_file, 'w') as f:
-                            f.write(outstr)
-
-                if write_fasta_for_colab_sampled or write_fasta_for_colab_argmax:
-                    colab_file = f'{self.outdir}/wildtype_multimer_colab_{partner_name}/{cleanid}_wildtype.fasta'
-                    if not os.path.exists(colab_file):
-                        os.makedirs(f'{self.outdir}/wildtype_multimer_colab_{partner_name}', exist_ok=True)
-                        outstr = f'>seqwildtype_{cleanid}\n'
-                        outstr += get_multimer_seq_from_array(sequence_wt, p0_len, 
-                                                              chain_breaks=chain_breaks)
-                        with open(colab_file, 'w') as f:
-                            f.write(outstr)
-                    
-                    outfile_json = f'{self.outdir}/sequence_recovery_argmax_{partner_name}.json'
-                    print(seqrec_argmax_dict)
-                    json.dump(seqrec_argmax_dict, open(outfile_json, 'w'))
-
+                self.sequence_writer.write_sequences(recovery_dict, partner_name,
+                                                    write_fasta_for_colab_argmax=write_fasta_for_colab_argmax,
+                                                    write_fasta_for_colab_sampled=write_fasta_for_colab_sampled)
                 
         outfile_json = f'{self.outdir}/sequence_recovery_argmax_{partner_name}.json'
         print(seqrec_argmax_dict)
