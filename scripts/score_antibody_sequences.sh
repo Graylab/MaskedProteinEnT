@@ -25,7 +25,7 @@ fi
 MODEL=../trained_models/AbPlusEnT_backup.ckpt
 TEST_RESULTS_BASE=/scratch16/jgray21/smahaja4_active/tmp_ab/
 PDB_FILE=/scratch16/jgray21/smahaja4_active/repositories/MaskedProteinEnT/data/antibodies/1n8z_trunc.pdb
-SFILE=
+SFILE=/scratch16/jgray21/smahaja4_active/repositories/MaskedProteinEnT/data/antibodies/sequences.txt
 python3 /scratch16/jgray21/smahaja4_active/repositories/MaskedProteinEnT/score_sequences.py  \
 	--model $MODEL \
 	--sequences_file $SFILE \
