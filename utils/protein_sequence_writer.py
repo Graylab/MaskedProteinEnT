@@ -4,7 +4,7 @@ import json
 from src.data.constants import num_to_letter, _aa_dict
 
 class ProteinSequenceWriter():
-    def __init__(outdir):
+    def __init__(self,outdir):
         self.outdir = outdir
         os.makedirs(self.outdir, exist_ok=True)
 
@@ -13,6 +13,7 @@ class ProteinSequenceWriter():
         cleanid = recovery_dict['id']
         seqrec_argmax = recovery_dict['seqrecargmax']
         seqrec_sampled = recovery_dict['seqrecsampled_all']
+        temp = recovery_dict['temp']
 
         #perplexity_dict[cleanid] = float(np.exp(loss.cpu().numpy()))
         sequence_argmax = recovery_dict['sequence_argmax']
@@ -21,9 +22,10 @@ class ProteinSequenceWriter():
         comma_separated_outstr = f'pdbid={cleanid},score={{}},'
         comma_separated_outstr += f'recovery={{}}'
 
+        n_seqs = len(seqrec_sampled)
         if write_fasta_for_colab_sampled:
-            os.makedirs(f'{self.outdir}/{cleanid}/{cleanid}_for_colab_N{N}', exist_ok=True)
-            colab_pattern = f'{self.outdir}/{cleanid}/{cleanid}_for_colab_N{N}/seq{{}}_sampled_temp{temp}.fasta'
+            os.makedirs(f'{self.outdir}/{cleanid}/{cleanid}_for_colab_N{n_seqs}', exist_ok=True)
+            colab_pattern = f'{self.outdir}/{cleanid}/{cleanid}_for_colab_N{n_seqs}/seq{{}}_sampled_temp{temp}.fasta'
             for j, (seq, rec) in enumerate(zip(sequences_sampled, seqrec_sampled)):
                 outstr = f'>seq{j},T={temp},'+comma_separated_outstr.format(sequences_sampled_loss[j], rec)+'\n'
                 outstr += num_to_letter(seq, _aa_dict) + '\n'
@@ -69,7 +71,7 @@ class ProteinSequenceWriter():
 
             outdir = f'{self.outdir}/{cleanid}'
             os.makedirs(outdir, exist_ok=True)
-            outfile_sampled = f'{outdir}/{cleanid}_sequences_sampled_temp{temp}_N{N}.fasta'
+            outfile_sampled = f'{outdir}/{cleanid}_sequences_sampled_temp{temp}_N{n_seqs}.fasta'
             with open(outfile_sampled, 'w') as f:
                 f.write(outstr)
 

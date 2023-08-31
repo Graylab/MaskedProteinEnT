@@ -7,7 +7,7 @@ from utils.prepare_model_inputs_from_pdb import get_protein_info_from_pdb_file,\
 get_antibody_info_from_pdb_file
 from src.model.ProteinMaskedLabelModel_EnT_MA import ProteinMaskedLabelModel_EnT_MA
 from utils.metrics import get_recovery_metrics_for_batch, score_sequences
-from io.protein_sequence_writer import ProteinSequenceWriter
+from utils.protein_sequence_writer import ProteinSequenceWriter
 
 torch.set_default_dtype(torch.float64)
 torch.set_grad_enabled(False)
@@ -84,7 +84,7 @@ class ProteinSequenceSampler():
                 print(cleanid, recovery_dict['seqrecargmax'])
                 seqrec_argmax_dict[cleanid] = recovery_dict['seqrecargmax']
                 seqrec_sampled_dict[cleanid] = recovery_dict['seqrecsampled_all']
-                self.sequence_writer(recovery_dict, 
+                self.sequence_writer.write_sequences(recovery_dict, 
                                      write_fasta_for_colab_argmax=write_fasta_for_colab_argmax,
                                      write_fasta_for_colab_sampled=write_fasta_for_colab_sampled)
 
