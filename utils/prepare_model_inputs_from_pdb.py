@@ -200,9 +200,9 @@ def add_ppi_info_full(info,pdb_file,chain_seqs,
             offset = 100 if chain_num > 0 else 0
             pdb_indices[partner] += [t+offset for t in pdb_residue_ids_dict[chain]]
             prev_len += len(chain_seqs[chain])
-            print(partner, len(chain_seqs[chain]))
-        print(partner, frag_indices[partner])
-        print(contact_indices_partners[partner])
+            #print(partner, len(chain_seqs[chain]))
+        #print(partner, frag_indices[partner])
+        #print(contact_indices_partners[partner])
         rel_contact_indices[partner] = [frag_indices[partner].index(ind)
                                         for ind in contact_indices_partners[partner]]
         frag_indices_pdb[partner] = [pdb_indices[partner][t] for t in frag_indices[partner]]
@@ -227,7 +227,7 @@ def get_ppi_info_from_pdb_file(pdb_file, max_id_len=40,
     parser = PDBParser()
     id=os.path.basename(pdb_file)[:-4][:max_id_len]
     structure = parser.get_structure(id, pdb_file)
-    partner_chains = [u for u in t for t in partners]
+    partner_chains = [u for t in partners for u in t]
     
     for chain in structure.get_chains():
         skip_chain = False
@@ -406,8 +406,8 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
     if light_chain != '':
         cdr_names += ['l1', 'l2', 'l3']
     cdr_indices = get_indices_dict_for_cdrs(pdb_file, per_chain_dict=False)
-    cdrs = [indices for cdr_name, indices in cdr_indices.items()]
-
+    cdrs = [(indices[0], indices[-1]) for cdr_name, indices in cdr_indices.items()]
+    
     ab = AntibodyTypeInteractingProtein(index,
                                         'ab',
                                         id,
@@ -429,6 +429,7 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
     dist_angle_mat = info['dist_mat']
     ab.dist_angle_mat = dist_angle_mat[:, :ab_len, :ab_len]
     ag.dist_angle_mat = dist_angle_mat[:, ab_len:, ab_len:]
+    
     
     mask_residue_selection = None
     if partner_selection == 'Ab' or partner_selection=='both':

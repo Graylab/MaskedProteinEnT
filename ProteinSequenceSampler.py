@@ -6,19 +6,15 @@ from utils.command_line_utils import _get_args
 from utils.prepare_model_inputs_from_pdb import get_protein_info_from_pdb_file,\
 get_antibody_info_from_pdb_file
 from src.model.ProteinMaskedLabelModel_EnT_MA import ProteinMaskedLabelModel_EnT_MA
-from utils.metrics import get_recovery_metrics_for_batch, score_sequences
+from utils.metrics import get_recovery_metrics_for_batch, score_sequences, get_cleanid_from_numpy_string
 from utils.protein_sequence_writer import ProteinSequenceWriter
+import warnings
+warnings.filterwarnings("ignore")
 
 torch.set_default_dtype(torch.float64)
 torch.set_grad_enabled(False)
 device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
 device = torch.device(device_type)
-
-def get_cleanid_from_numpy_string(id):
-    if type(id) is str:
-        return id
-    cleanid= str(id)[2:-1]
-    return cleanid
 
 
 class ProteinSequenceSampler():

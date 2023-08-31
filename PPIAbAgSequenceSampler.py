@@ -5,25 +5,21 @@ import torch
 import numpy as np
 import pandas as pd
 from utils.metrics \
-    import get_recovery_metrics_for_batch
+    import get_recovery_metrics_for_batch, get_cleanid_from_numpy_string
 from src.model.ProteinMaskedLabelModel_EnT_MA import ProteinMaskedLabelModel_EnT_MA
 from src.data.constants import num_to_letter, _aa_dict
 from utils.prepare_model_inputs_from_pdb \
                 import get_ppi_info_from_pdb_file, get_abag_info_from_pdb_file
 from utils.command_line_utils import _get_args
-from io.ppi_sequence_writer import PPISequenceWriter
+from utils.ppi_sequence_writer import PPISequenceWriter
 import sys
+import warnings
+warnings.filterwarnings("ignore")
 
 torch.set_default_dtype(torch.float64)
 torch.set_grad_enabled(False)
 device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
 device = torch.device(device_type)
-
-def get_cleanid_from_numpy_string(id):
-    if type(id) is str:
-        return id
-    cleanid= str(id)[2:-1]
-    return cleanid
 
 
 class PPISequenceSampler():
@@ -96,6 +92,7 @@ class PPISequenceSampler():
                 if args.antibody:
                     args.mask_ab_region = None if args.mask_ab_region == '' else args.mask_ab_region
                     args.mask_ab_indices = None if args.mask_ab_indices == '' else args.mask_ab_indices
+                    print('Masking regions: ', args.mask_ab_region)
                     batch = get_abag_info_from_pdb_file(pdb_file,
                                                         partners=partners,
                                                         mr_p0=mr_p0,
@@ -142,7 +139,7 @@ class PPISequenceSampler():
                     for t in contact_res_mask.nonzero().flatten().tolist()
                     if t >= self.lengths_dict[cleanid]])
         
-        self.sequence_writer = PPISequenceWriter(self.outdir, self.chain_breaks, partner_selection)
+        self.sequence_writer = PPISequenceWriter(self.outdir, self.chain_breaks, partner_selection, self.lengths_dict)
 
 
 
@@ -189,7 +186,6 @@ class PPISequenceSampler():
                                                     write_fasta_for_colab_sampled=write_fasta_for_colab_sampled)
                 
         outfile_json = f'{self.outdir}/sequence_recovery_argmax_{partner_name}.json'
-        print(seqrec_argmax_dict)
         json.dump(seqrec_argmax_dict, open(outfile_json, 'w'))
 
 
@@ -202,6 +198,5 @@ if __name__ == '__main__':
     ids = [t for t in args.ids.split(',') if t!='']
     for temp in temperatures:
         for N in n_samples:
-            print('Here')
             psampler.sample(temp=temp, N=N, partner_name=args.partner_name,
                             subset_ids=ids, write_fasta_for_colab_sampled=True)

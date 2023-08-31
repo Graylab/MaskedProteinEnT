@@ -1,8 +1,15 @@
+import torch
+import os
+import sys
+import pandas as pd
 from utils.metrics import score_sequences
+from utils.command_line_utils import _get_args
 from utils.prepare_model_inputs_from_pdb import get_protein_info_from_pdb_file,\
 get_antibody_info_from_pdb_file
+from src.model.ProteinMaskedLabelModel_EnT_MA import ProteinMaskedLabelModel_EnT_MA
 from src.data.constants import letter_to_num, _aa_dict
-import torch
+import warnings
+warnings.filterwarnings("ignore")
 
 torch.set_default_dtype(torch.float64)
 torch.set_grad_enabled(False)
@@ -32,7 +39,9 @@ if __name__ == '__main__':
     model = ProteinMaskedLabelModel_EnT_MA.load_from_checkpoint(args.model).to(device)
     model.freeze()
     outfile=os.path.join(args.output_dir, 'sequence_scores.csv')
-    score_antibody_sequences(args.from_pdb, args.sequences_file, model, outfile)
+    assert os.path.exists(args.pdb_file)
+    assert os.path.exists(args.sequences_file)
+    score_antibody_sequences(args.pdb_file, args.sequences_file, model, outfile)
 
 
 

@@ -8,8 +8,11 @@ device = torch.device(device_type)
 
 
 def get_cleanid_from_numpy_string(id):
+    if type(id) is str:
+        return id
     cleanid= str(id)[2:-1]
     return cleanid
+
 
 def get_recovery_metrics_for_batch(batch, model, temp, N):
     import random
@@ -72,6 +75,7 @@ def get_recovery_metrics_for_batch(batch, model, temp, N):
     y_wt[fixed_indices] = fixed_labels
     results['wt'] = y_wt.numpy()
     #perplexity
+    print(id[0])
     cleanid = get_cleanid_from_numpy_string(id[0])
     results['id'] = cleanid
     # sampled

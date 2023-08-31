@@ -10,12 +10,12 @@ class ProteinSequenceWriter():
 
     def write_sequences(self, recovery_dict, write_fasta_for_colab_sampled=False, 
                         write_fasta_for_colab_argmax=False):
+        
         cleanid = recovery_dict['id']
         seqrec_argmax = recovery_dict['seqrecargmax']
         seqrec_sampled = recovery_dict['seqrecsampled_all']
         temp = recovery_dict['temp']
 
-        #perplexity_dict[cleanid] = float(np.exp(loss.cpu().numpy()))
         sequence_argmax = recovery_dict['sequence_argmax']
         sequences_sampled = recovery_dict['sequences_sampled']
         sequences_sampled_loss = recovery_dict['sequences_sampled_loss']
