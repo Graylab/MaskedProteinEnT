@@ -54,3 +54,10 @@ python3 PPIAbAgSequenceSampler.py  \
 # to design interface residues on both partners use
 # --partner_name both
 ```
+
+## Sampling interface residues with partner context at the antibody-antigen interface
+```
+```
+
+## References
+[EnTransformer code](https://github.com/lucidrains/En-transformer/tree/373efe752d0a9959fc0a61e2c6d5ca423c491682) is based on lucidrains implementation of EGNN (Satorras et al. 2021) with equivariant transformer layers.
