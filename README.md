@@ -1,5 +1,8 @@
 # MaskedProteinEnT
 Code to sample sequences with a contextual Masked EnTransformer as described in  ["Contextual protein and antibody encodings from equivariant graph transformers"](https://pubmed.ncbi.nlm.nih.gov/37503113/).
+<picture>
+MainFigure_Model.tiff
+</picture>
 
 ## Installation
 In your virtual environment, pip install as follows:
