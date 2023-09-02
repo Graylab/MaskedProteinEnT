@@ -36,8 +36,8 @@ python3 ProteinSequenceSampler.py --help
 To generate/design the interface residues for the first partner (order determined by partners.json), run:
 
 ```bash
-MODEL=../trained_models/ProtPPIEnT_backup.ckpt
-TEST_RESULTS_BASE=./sampled_ppi_sequences
+MODEL=trained_models/ProtPPIEnT_backup.ckpt
+OUTDIR=./sampled_ppi_sequences
 PDB_DIR=data/ppis
 PPI_PARTNERS_DICT=data/ppis/heteromers_partners_example.json
 python3 PPIAbAgSequenceSampler.py  \
@@ -55,8 +55,23 @@ python3 PPIAbAgSequenceSampler.py  \
 # --partner_name both
 ```
 
-## Sampling interface residues with partner context at the antibody-antigen interface
+## Sampling antibody interface residues with antigen context
 ```
+MODEL=trained_models/ProtAbAgEnT_backup.ckpt
+OUTDIR=./sampled_abag_sequences
+PDB_DIR=data/abag/
+PPI_PARTNERS_DICT=data/abag/1n8z_partners.json
+python3 PPIAbAgSequenceSampler.py  \
+        --output_dir ${OUTDIR} \
+        --model $MODEL \
+        --from_pdb $PDB_DIR \
+	--sample_temperatures 0.2,0.5 \
+       	--num_samples 100 \
+	--partners_json ${PPI_PARTNERS_DICT} \
+	--partner_name Ab \
+        --antibody
+# To specify sampling at a specific CDR loop:
+# --mask_ab_region h3
 ```
 
 ## References
