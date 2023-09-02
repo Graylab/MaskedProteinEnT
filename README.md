@@ -1,8 +1,8 @@
 # MaskedProteinEnT
 Code to sample sequences with a contextual Masked EnTransformer as described in  ["Contextual protein and antibody encodings from equivariant graph transformers"](https://pubmed.ncbi.nlm.nih.gov/37503113/).
-<picture>
-MainFigure_Model.tiff
-</picture>
+
+![Self-supervised learning to transduce sequence labels for masked residues (e.g., ALA) from those for unmasked residues (CYS, PRO) by context matching on proteins. The encoding thus learned can be fine-tuned to specialized contexts such as protein-protein interfaces (shown) or CDR loops of antibodies (not shown) at the antibody-antigen interface![image](https://github.com/Graylab/MaskedProteinEnT/assets/14285703/383bb634-1870-42ac-a82a-7563a3b90c82)
+](MainFigure_Model.tiff)
 
 ## Installation
 In your virtual environment, pip install as follows:
