@@ -75,7 +75,7 @@ python3 PPIAbAgSequenceSampler.py  \
 ```
 
 ## References
-[EnTransformer code](https://github.com/lucidrains/En-transformer/tree/373efe752d0a9959fc0a61e2c6d5ca423c491682) is based on lucidrains implementation of EGNN (Satorras et al. 2021) with equivariant transformer layers.
+EnTransformer code is based on [Phil Wang's implementation](https://github.com/lucidrains/En-transformer/tree/373efe752d0a9959fc0a61e2c6d5ca423c491682) of EGNN (Satorras et al. 2021) with equivariant transformer layers.
 Models and sequence recovery reported for Antibody CDRs with different models reported in Figure 2 available at https://zenodo.org/record/8313466.
 If you use this repository to generate or score sequences, please cite:
 ```
