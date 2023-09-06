@@ -13,6 +13,12 @@ pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f ht
 pip install -r requirements.txt
 ```
 
+## Trained models
+Download and extract trained models from https://zenodo.org/deposit/8313466#.
+```
+tar -xvzf model.tar.gz
+```
+
 ## Sampling protein sequences
 To design/generate all positions on the protein, run:
 ```bash
