@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from torch import nn, einsum
 from torch.utils.checkpoint import checkpoint_sequential
 
-from en_transformer.rotary import SinusoidalEmbeddings, apply_rotary_pos_emb
+from src.model.en_transformer.rotary import SinusoidalEmbeddings, apply_rotary_pos_emb
 
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
