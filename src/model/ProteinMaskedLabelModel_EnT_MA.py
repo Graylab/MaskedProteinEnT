@@ -2,7 +2,6 @@ from typing import Optional
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
-from torchmetrics import MetricCollection, Accuracy
 from src.model.en_transformer.en_transformer import EnTransformer
 from src.model.MaskedModelMetrics import LocalAccuracy
 
@@ -102,12 +101,6 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
         self.dropout = nn.Dropout(self.dropout)
         self.proj = nn.Linear(self.n_hidden * self.natoms, self.n_labels)
-        metrics = MetricCollection([
-            Accuracy(ignore_index=self.n_labels,
-                     top_k=self.top_k_metrics).double()
-        ])
-        self.train_metrics = metrics.clone(prefix='train_').double()
-        self.valid_metrics = metrics.clone(prefix='val_').double()
         self.train_accuracy_protein = LocalAccuracy(ignore_index=self.n_labels)
         self.train_accuracy_ppi = LocalAccuracy(ignore_index=self.n_labels)
         self.train_accuracy_abag_ppi = LocalAccuracy(ignore_index=self.n_labels)
@@ -120,9 +113,6 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
         self.val_accuracy_abag = LocalAccuracy(ignore_index=self.n_labels)
         self.val_accuracy_ab = LocalAccuracy(ignore_index=self.n_labels)
         self.test_accuracy = LocalAccuracy(ignore_index=self.n_labels)
-        self.train_accuracy_base = Accuracy(ignore_index=self.n_labels,
-                                            top_k=self.top_k_metrics,
-                                            threshold=0.01)
 
     def forward(self, nfeats, coords, mask=None, pos_indices=None, return_attn=False):
         # not giving adj mat: using nearest neighbors and attention to determine neighbor weighting
