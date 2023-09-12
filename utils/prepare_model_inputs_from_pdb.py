@@ -463,7 +463,8 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
                         select_intersection=assert_contact,
                         non_contact_percent=0)
     sequence_masked_label_p1 = \
-        ag.mask_sequence(contact_percent=mr_p1)
+        ag.mask_sequence(contact_percent=mr_p1,
+                        non_contact_percent=0)
     
     nfeats_p0 = ab.prim_masked.float()
     nfeats_p1 = ag.prim_masked.float()
