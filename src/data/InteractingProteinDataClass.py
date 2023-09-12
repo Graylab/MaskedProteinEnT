@@ -56,8 +56,8 @@ class MultiChainInteractingProtein():
 
     def mask_sequence(
             self,
-            contact_percent=0.15,
-            non_contact_percent=0.05,
+            contact_percent=1.0,
+            non_contact_percent=0.0,
             ignore_index=20,  # 19+1
             debug=False,
             pdf_flip=None,
