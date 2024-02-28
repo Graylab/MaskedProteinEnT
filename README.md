@@ -51,8 +51,9 @@ python3 ProteinSequenceSampler.py  \
 	--sample_temperatures 0.2,0.5 \
 	--num_samples 100 \
 	--antibody \
-	--mask_ab_indices 10,11,12 \
-	--mask_ab_region h3
+	--mask_ab_indices 10,11,12
+# To sample for a specific region
+#	--mask_ab_region h3
 	
 ```
 The above command samples all sequences at 100% masking (i.e. only coord information is used by the model). You may sample at any other masking rate between 0-100% and the model will randomly select the positions to mask. For more options, run:
