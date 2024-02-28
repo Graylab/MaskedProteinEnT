@@ -48,6 +48,9 @@ class ProteinSequenceSampler():
             print(f'Found {len(pdb_files)} files.')
             for pdb_file in pdb_files:
                 if args.antibody:
+                    args.mask_ab_region = None if args.mask_ab_region == '' else args.mask_ab_region
+                    args.mask_ab_indices = None if args.mask_ab_indices == '' else args.mask_ab_indices
+                    print('Masking regions: ', args.mask_ab_region)
                     batch = get_antibody_info_from_pdb_file(pdb_file,
                                                            mask_ab_indices=args.mask_ab_indices,
                                                            mask_ab_region=args.mask_ab_region)
