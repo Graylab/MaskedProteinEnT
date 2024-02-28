@@ -51,6 +51,7 @@ class ProteinSequenceSampler():
                     args.mask_ab_region = None if args.mask_ab_region == '' else args.mask_ab_region
                     args.mask_ab_indices = None if args.mask_ab_indices == '' else args.mask_ab_indices
                     print('Masking regions: ', args.mask_ab_region)
+                    print('Masking indices: ', args.mask_ab_indices)
                     batch = get_antibody_info_from_pdb_file(pdb_file,
                                                            mask_ab_indices=args.mask_ab_indices,
                                                            mask_ab_region=args.mask_ab_region)
