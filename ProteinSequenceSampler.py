@@ -58,7 +58,9 @@ class ProteinSequenceSampler():
 
     def sample(self, temp=1.0, N=100, write_fasta_for_colab_argmax=False,
                write_fasta_for_colab_sampled=False,
-                subset_ids=[]):
+               region_selection=None,
+               mask_indices=None
+               subset_ids=[]):
         import json
         import numpy as np
 
@@ -106,4 +108,6 @@ if __name__ == '__main__':
         for N in n_samples:
             psampler.sample(temp=temp, N=N, subset_ids=ids,
                             write_fasta_for_colab_sampled=True,
-                            write_fasta_for_colab_argmax=True)
+                            write_fasta_for_colab_argmax=True,
+                            mask_indices=mask_indices,
+                            region_selection=region_selection)
