@@ -579,7 +579,7 @@ def get_antibody_info_from_pdb_file(pdb_file, max_id_len=40,
                 mask_residue_selection = ab.cdr_indices_dict[region]
                 break
     if not mask_ab_indices is None:
-        mask_residue_selection = mask_ab_indices
+        mask_residue_selection = [int(t) for t in mask_ab_indices.split(',')]
 
     ab.set_contact_indices(torch.tensor([t for t in range(sequence_len)]).long())
     
