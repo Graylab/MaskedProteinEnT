@@ -455,7 +455,8 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
                     mask_residue_selection = ab.cdr_indices_dict[region]
                     break
         if not mask_ab_indices is None:
-            mask_residue_selection = mask_ab_indices
+            mask_residue_selection = comma_separated_to_list(mask_ab_indices)
+            print("List of masked residues", mask_residue_selection)
 
     sequence_masked_label_p0 = \
         ab.mask_sequence(contact_percent=mr_p0,
