@@ -49,7 +49,7 @@ class ProteinSequenceSampler():
             for pdb_file in pdb_files:
                 if args.antibody:
                     batch = get_antibody_info_from_pdb_file(pdb_file,
-                                                           mask_indices=args.mask_ab_indices)
+                                                           mask_ab_indices=args.mask_ab_indices)
                 else:
                     batch = get_protein_info_from_pdb_file(pdb_file)
                 self.d_loader.append(batch)
