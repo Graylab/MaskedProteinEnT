@@ -78,6 +78,8 @@ python3 PPIAbAgSequenceSampler.py  \
         --antibody
 # To specify sampling at a specific CDR loop:
 # --mask_ab_region h3
+# To specify sampling at a specific indices:
+# --mask_ab_indices 10,11,12
 ```
 
 ## References
