@@ -95,6 +95,13 @@ if __name__ == '__main__':
     n_samples = [int(t) for t in args.num_samples.split(',')]
     ids = [t for t in args.ids.split(',') if t!='']
     print(temperatures, n_samples)
+    mask_indices = [int(t) for t in args.mask_ab_indices.split(',')] \
+                        if args.mask_ab_indices!='' \
+                        else None
+    region_selection = args.mask_ab_region \
+                        if args.mask_ab_region!='' \
+                        else None
+    
     for temp in temperatures:
         for N in n_samples:
             psampler.sample(temp=temp, N=N, subset_ids=ids,
