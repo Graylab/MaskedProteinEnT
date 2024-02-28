@@ -49,7 +49,8 @@ class ProteinSequenceSampler():
             for pdb_file in pdb_files:
                 if args.antibody:
                     batch = get_antibody_info_from_pdb_file(pdb_file,
-                                                           mask_ab_indices=args.mask_ab_indices)
+                                                           mask_ab_indices=args.mask_ab_indices,
+                                                           mask_ab_region=args.mask_ab_region)
                 else:
                     batch = get_protein_info_from_pdb_file(pdb_file)
                 self.d_loader.append(batch)
@@ -59,8 +60,6 @@ class ProteinSequenceSampler():
 
     def sample(self, temp=1.0, N=100, write_fasta_for_colab_argmax=False,
                write_fasta_for_colab_sampled=False,
-               region_selection=None,
-               mask_indices=None
                subset_ids=[]):
         import json
         import numpy as np
@@ -98,17 +97,9 @@ if __name__ == '__main__':
     n_samples = [int(t) for t in args.num_samples.split(',')]
     ids = [t for t in args.ids.split(',') if t!='']
     print(temperatures, n_samples)
-    mask_indices = [int(t) for t in args.mask_ab_indices.split(',')] \
-                        if args.mask_ab_indices!='' \
-                        else None
-    region_selection = args.mask_ab_region \
-                        if args.mask_ab_region!='' \
-                        else None
     
     for temp in temperatures:
         for N in n_samples:
             psampler.sample(temp=temp, N=N, subset_ids=ids,
                             write_fasta_for_colab_sampled=True,
-                            write_fasta_for_colab_argmax=True,
-                            mask_indices=mask_indices,
-                            region_selection=region_selection)
+                            write_fasta_for_colab_argmax=True)
