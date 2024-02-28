@@ -498,6 +498,9 @@ def get_abag_info_from_pdb_file(pdb_file, max_id_len=40,
                                 sequence_label, pos_indices, metadata, with_metadata=with_metadata)
     return batch
 
+def comma_separated_to_list(mask_ab_indices):
+    return [int(t) for t in mask_ab_indices.split(',')]
+
 
 def get_antibody_info_from_pdb_file(pdb_file, max_id_len=40,
                                     mr=1.0,
@@ -579,7 +582,8 @@ def get_antibody_info_from_pdb_file(pdb_file, max_id_len=40,
                 mask_residue_selection = ab.cdr_indices_dict[region]
                 break
     if not mask_ab_indices is None:
-        mask_residue_selection = [int(t) for t in mask_ab_indices.split(',')]
+        mask_residue_selection = comma_separated_to_list(mask_ab_indices)
+        print("List of masked residues", mask_residue_selection)
 
     ab.set_contact_indices(torch.tensor([t for t in range(sequence_len)]).long())
     
