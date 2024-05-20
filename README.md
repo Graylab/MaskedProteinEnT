@@ -5,19 +5,15 @@ Code to sample sequences with a contextual Masked EnTransformer as described in 
 ](./MainFigure_Model_downsized.png)
 
 ## Installation
+
 In your virtual environment, pip install as follows:
-```sh
-# Install torch (for cuda11):
-pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
-# Install everything else:
-pip install -r requirements.txt
-```
-Alternatively, install without cuda/gpu  
-**Sampling is just as fast on cpus: <2min for 10000 sequences**
 ```sh
 pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html
 pip install -r requirements.txt
 ```
+Sampling works well on CPUs and GPUs.
+**Sampling is just as fast on cpus: <2min for 10000 sequences**
+
 
 ## Trained models
 Download and extract trained models from [Zenodo](https://zenodo.org/records/8313466).
