@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ```
 
 ## Trained models
-Download and extract trained models from https://zenodo.org/deposit/8313466.
+Download and extract trained models from [Zenodo](https://zenodo.org/records/8313466).
 ```
 tar -xvzf model.tar.gz
 ```
