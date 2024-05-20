@@ -12,10 +12,16 @@ pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f ht
 # Install everything else:
 pip install -r requirements.txt
 ```
+Alternatively, install (without cuda/gpu) as:
+```sh
+pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html
+pip install -r requirements.txt
+```
 
 ## Trained models
 Download and extract trained models from https://zenodo.org/deposit/8313466.
 ```
+wget https://zenodo.org/deposit/8313466
 tar -xvzf model.tar.gz
 ```
 
