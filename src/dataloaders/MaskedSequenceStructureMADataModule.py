@@ -2,7 +2,8 @@ import pytorch_lightning as pl
 import pickle, os, sys
 import torch
 from typing import Optional
-
+from pytorch_lightning.trainer.supporters import CombinedLoader
+import torch.utils.data as torchdata
 #datasets
 from src.datasets.AntibodyMaskedMultiAtomDatasetBatched import AntibodyMaskedMultiAtomDatasetBatched
 from src.datasets.H5AbAgPPIMaskedMultiAtomDatasetBatched \
@@ -11,10 +12,35 @@ from src.datasets.ProteinMaskedMultiAtomDatasetBatched import ProteinMaskedMulti
 from src.datasets.SCNProteinMaskedMultiAtomDatasetBatched \
     import SCNProteinMaskedMultiAtomDatasetBatched
 
-from src.utils.command_line_utils \
-     import split_dataset
-from pytorch_lightning.trainer.supporters import CombinedLoader
 
+def split_dataset(dataset,args):
+
+    train_split_length = int(len(dataset) * args.train_split)
+    assert train_split_length <= len(dataset)
+    import random
+    random.seed(args.seed)
+    indices_data = list(range(0,len(dataset)))
+    random.shuffle(indices_data)
+    indices_val = indices_data[:len(dataset) - train_split_length]
+    assert(len(indices_val)==len(set(indices_val)))
+    indices_train = [t for t in range(len(dataset)) if t not in indices_val]
+
+    if args.max_train is not None:
+        indices_train = indices_train[:args.max_train]
+    if args.max_val is not None:
+        indices_val = indices_val[:args.max_val]
+
+    sorted_indices = dataset.get_sorted_indices()
+    sorted_val_indices = [i for i in sorted_indices if i in indices_val]
+    sorted_train_indices = [i for i in sorted_indices if i in indices_train]
+    assert(set(sorted_train_indices).intersection(set(sorted_val_indices)) == set())
+
+    print("Effective dataset sizes: ", len(sorted_train_indices), len(sorted_val_indices),\
+         len(sorted_train_indices) + len(sorted_val_indices))
+
+    train_dataset = torchdata.Subset(dataset, indices=sorted_train_indices)
+    validation_dataset = torchdata.Subset(dataset, indices=sorted_val_indices)
+    return train_dataset, validation_dataset
 
 def is_protein_dataset(args):
     if args.use_scn or args.h5_file_protein != '':
