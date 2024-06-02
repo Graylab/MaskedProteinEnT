@@ -20,8 +20,6 @@ class ProteinMaskedMultiAtomDatasetBatched(data.Dataset):
             num_bins=36,
             max_seq_len=350,
             clean_up=True,
-            topk_ab=15,
-            topk_ag=15,
             contact_dist_threshold=8.0,
             max_mask=0.15,
             gmodel='egnn-trans-ma',
@@ -29,8 +27,8 @@ class ProteinMaskedMultiAtomDatasetBatched(data.Dataset):
             atom_mode='backbone_and_cb',
             span=False,
             min_span_length=3,
-            max_span_length=12,
-            use_pseudo_cb=False):
+            max_span_length=12
+            ):
         """
         :param filename: The h5 file for the antibody data.
         :param onehot_prim:
@@ -42,16 +40,10 @@ class ProteinMaskedMultiAtomDatasetBatched(data.Dataset):
         super(ProteinMaskedMultiAtomDatasetBatched, self).__init__()
         self.h5file = h5py.File(filename, 'r')
         self.onehot_prim = onehot_prim
-        self.use_pseudo_cb = use_pseudo_cb
 
-        self.input_ag_labels = input_ag_labels
-        self.input_ab_labels = input_ab_labels
-        # Filter out sequences beyond the max length
         self.max_seq_len = max_seq_len
         self.valid_indices = None
         
-        self.topk_ab = topk_ab
-        self.topk_ag = topk_ag
         self.contact_dist_threshold = contact_dist_threshold
         self.percent_mask = max_mask
         self.gmodel = gmodel

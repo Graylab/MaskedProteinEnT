@@ -18,7 +18,6 @@ class AntibodyMaskedMultiAtomDatasetBatched(data.Dataset):
             self,
             h5file,
             onehot_prim=True,
-            num_bins=36,
             max_seq_len=350,
             pe_nodes=16,
             pe_edges=16,
@@ -37,9 +36,6 @@ class AntibodyMaskedMultiAtomDatasetBatched(data.Dataset):
         :param filename: The h5 file for the antibody data.
         :param onehot_prim:
             Whether or not to onehot-encode the primary structure data.
-        :param num_bins:
-            The number of bins to discretize the distance matrix into. If None,
-            then the distance matrix remains continuous.
         """
         super(AntibodyMaskedMultiAtomDatasetBatched, self).__init__()
         self.h5file = h5py.File(h5file, 'r')

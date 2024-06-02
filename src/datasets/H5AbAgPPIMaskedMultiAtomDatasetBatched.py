@@ -20,7 +20,6 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
             filename,
             gmodel='egnn-trans-ma',
             onehot_prim=True,
-            num_bins=36,
             max_seq_len=None,
             contact_dist_threshold=8.0,
             max_mask=0.40,
@@ -36,9 +35,6 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
         :param filename: The h5 file for the antibody data.
         :param onehot_prim:
             Whether or not to onehot-encode the primary structure data.
-        :param num_bins:
-            The number of bins to discretize the distance matrix into. If None,
-            then the distance matrix remains continuous.
         """
         super(H5AbAgPPIMaskedMultiAtomDatasetBatched, self).__init__()
         self.gmodel = gmodel # gt, egnn, egnn-trans
@@ -202,10 +198,6 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
             # Try preprocessing - how large?
             ab.to_one_hot()
             ag.to_one_hot()
-
-            if self.add_delimiters:
-                ab.add_delimiters_to_one_hot()
-                ag.add_delimiters_to_one_hot()
         else:
             ab.prim.unsqueeze_(1)
             ag.prim.unsqueeze_(1)

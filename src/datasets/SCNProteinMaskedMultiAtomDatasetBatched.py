@@ -19,7 +19,6 @@ class SCNProteinMaskedMultiAtomDatasetBatched(data.Dataset):
             selected_ids_file='',
             onehot_prim=True,
             max_seq_len=350,
-            topk_ag=15,
             contact_dist_threshold=8.0,
             max_mask=0.15,
             gmodel='egnn-trans-ma',
@@ -39,10 +38,7 @@ class SCNProteinMaskedMultiAtomDatasetBatched(data.Dataset):
         self.max_seq_len = max_seq_len
         self.valid_indices = None
         self.dataset_keys = scn_dataset_keys
-        self.fixed_atoms = False
-        self.use_pseudo_cb = use_pseudo_cb
-
-        self.topk_ag = topk_ag
+        
         self.contact_dist_threshold = contact_dist_threshold
         # masking
         self.percent_mask = max_mask
