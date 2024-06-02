@@ -29,20 +29,15 @@ def is_protein_dataset(args):
 
 def get_protein_dataset_setup(args):
     shared_arguments = dict(max_seq_len=args.max_seq_len,
-                            onehot_prim=(not args.no_onehot_prim),
                             max_mask=args.masking_rate_max,
-                            crop=args.crop_sequences,
-                            gmodel=args.protein_gmodel,
                             )
     return shared_arguments
         
 
 
 def get_ppi_dataset_setup(args, dataset_name=None):
-    shared_arguments = dict(num_bins=args.num_bins,
-                            max_mask=args.masking_rate_max,
-                            min_mask=args.masking_rate_min,
-                            max_seq_len=args.max_seq_len
+    shared_arguments = dict(max_mask=args.masking_rate_max,
+                            min_mask=args.masking_rate_min
                             )
     if dataset_name is not None:
         shared_arguments.update(dict(dataset=dataset_name))
