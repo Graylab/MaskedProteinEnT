@@ -33,7 +33,7 @@ class ProteinSequenceSampler():
         
         self.d_loader = None
         if self.args.from_pdb == '':
-            from src.data.datamodules.MaskedSequenceStructureMADataModule import \
+            from src.datamodules.MaskedSequenceStructureMADataModule import \
             MaskedSequenceStructureMADataModule
             datamodule = MaskedSequenceStructureMADataModule(self.args)
             datamodule.setup()
