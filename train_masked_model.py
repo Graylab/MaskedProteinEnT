@@ -16,8 +16,7 @@ from src.models.ProteinMaskedLabelModel.ProteinMaskedLabelModel_EnT_MA \
 from src.dataloaders.MaskedSequenceStructureMADataModule \
     import MaskedSequenceStructureMADataModule
 
-from src.models.ProteinMaskedLabelModel.utils.command_line_utils\
-     import _get_args
+from src.command_line_utils import _get_args
 
 
 stamp = datetime.now().strftime("%Y%m%d%H%M")
