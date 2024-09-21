@@ -3,9 +3,8 @@ import pickle, os, sys
 import torch
 from typing import Optional
 from pytorch_lightning.trainer.supporters import CombinedLoader
-from src.data.datasets.datasets \
-import split_dataset, get_protein_dataset_setup, get_ppi_dataset_setup
-from src.data.dataloaders import _helper_loader
+from src.data.datamodules.utils \
+import get_protein_dataset_setup, get_ppi_dataset_setup, split_dataset, _helper_loader
 from src.data.datasets.AntibodyMaskedMultiAtomDatasetBatched import AntibodyMaskedMultiAtomDatasetBatched
 from src.data.datasets.H5AbAgPPIMaskedMultiAtomDatasetBatched import H5AbAgPPIMaskedMultiAtomDatasetBatched
 from src.data.datasets.ProteinMaskedMultiAtomDatasetBatched import ProteinMaskedMultiAtomDatasetBatched

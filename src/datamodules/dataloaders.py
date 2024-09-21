@@ -1,26 +1,9 @@
-from src.data.datasets.datasets \
-import split_dataset, get_protein_dataset_setup, get_ppi_dataset_setup
+from src.data.datamodules.utils \
+import split_dataset, get_protein_dataset_setup, get_ppi_dataset_setup, _helper_loader
 from src.data.datasets.AntibodyMaskedMultiAtomDatasetBatched import AntibodyMaskedMultiAtomDatasetBatched
 from src.data.datasets.H5AbAgPPIMaskedMultiAtomDatasetBatched import H5AbAgPPIMaskedMultiAtomDatasetBatched
 from src.data.datasets.ProteinMaskedMultiAtomDatasetBatched import ProteinMaskedMultiAtomDatasetBatched
 from src.data.datasets.SCNProteinMaskedMultiAtomDatasetBatched import SCNProteinMaskedMultiAtomDatasetBatched
-
-
-def collate_function_getter(with_metadata=False):
-    if not with_metadata:
-        return SCNProteinMaskedMultiAtomDatasetBatched.merge_samples_to_minibatch
-    else:
-        return SCNProteinMaskedMultiAtomDatasetBatched.merge_samples_to_minibatch_with_metadata
-
-
-def _helper_loader(dataset, args, with_metadata=False):
-    return torch.utils.data.DataLoader(
-    dataset,
-    shuffle=args.shuffle_dataset,
-    collate_fn=collate_function_getter(with_metadata=with_metadata),
-    batch_size=args.batch_size,
-    pin_memory=True,
-    num_workers=args.num_procs)
 
 
 def get_dataloaders_ppi(args, dataset_model=None, 
