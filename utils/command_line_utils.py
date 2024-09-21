@@ -53,26 +53,6 @@ def _get_args():
                         type=int,
                         default=6,
                         help='number of cpu procs available per node')
-    parser.add_argument('--max_seq_len',
-                        type=int,
-                        default=350,
-                        help="max seq length from SCN Dataset and EGNN")
-    parser.add_argument('--crop_sequences',
-                        action='store_true',
-                        default=False,
-                        help="crop sequence/structure to --max_seq_len")
-    parser.add_argument('--scn_casp_version',
-                        type=int,
-                        default=12,
-                        help="sidechainnet casp version")
-    parser.add_argument('--scn_sequence_similarity',
-                        type=int,
-                        default=30,
-                        help="sequence similarity culling of dataset - 30, 50, 90")
-    parser.add_argument('--protein_gmodel',
-                        type=str,
-                        default='egnn-trans-ma',
-                        help='graph-model to use for protein masked model: eggn, egnn-trans')
     parser.add_argument('--from_pdb',
                         type=str,
                         default='',
@@ -215,11 +195,6 @@ def _get_args():
                         type=int,
                         default=10,
                         help='max number of nearest neighbors for antigen')
-    parser.add_argument('--full_connectivity',
-                        action='store_true',
-                        default=False,
-                        help='use fully connected graph')
-
     #Output options
     parser.add_argument('--max_train',
                         type=int,
@@ -283,7 +258,7 @@ def _get_args():
                         help="sequence similarity culling of dataset - 30, 50, 90")
     parser.add_argument('--protein_gmodel',
                         type=str,
-                        default='egnn',
+                        default='egnn-trans-ma',
                         help='graph-model to use for protein masked model: eggn, egnn-trans')
     parser.add_argument('--from_pdb',
                         type=str,
@@ -293,82 +268,18 @@ def _get_args():
                         type=str,
                         default='',
                         help='dictionary mapping pdbfile basename to partner chains separated by underscore')
-    parser.add_argument('--sample_temperatures',
-                        type=str,
-                        default='0.1,0.2,1.0',
-                        help='comma separted string of temperatures to sample sequences')
-    parser.add_argument('--num_samples',
-                        type=str,
-                        default='100',
-                        help='string or comma separted string of number of samples')
-    parser.add_argument('--mask_ab_indices',
-                        type=str,
-                        default='',
-                        help='0-numbered Ab residue indices to design')
-    parser.add_argument('--ids',
-                        type=str,
-                        default='',
-                        help='comma separated subset of pdb ids to select from h5 dataset or pdb files')
-    parser.add_argument('--predict_from_esm',
-                        action='store_true',
-                        default=False,
-                        help='predict masked label from esm')
-    parser.add_argument('--file_with_selected_scn_ids_for_training',
-                        type=str,
-                        default='',
-                        help='file to train on only a subset of ids from SCN dataset')
-    parser.add_argument('--file_with_selected_scn_ids_for_testing',
-                        type=str,
-                        default='',
-                        help='file to train on only a subset of ids from SCN dataset')
     parser.add_argument('--fine_tune',
                         action='store_true',
                         default=False,
                         help='continue from pretrained model fr fine-tuning')
-    parser.add_argument('--use_scn',
-                        action='store_true',
-                        default=False,
-                        help='Use SidechainNet Dataset also')
     parser.add_argument('--use_scn_valid_and_test',
                         action='store_true',
                         default=False,
                         help='Use SidechainNet Valid and Test sets')
-    parser.add_argument('--inference',
-                        action='store_true',
-                        default=False,
-                        help='Run in inference mode')
-    parser.add_argument('--predict_coords',
-                        action='store_true',
-                        default=False,
-                        help='predict coords')
-    parser.add_argument('--use_pseudo_cb',
-                        action='store_true',
-                        default=False,
-                        help='use pseudo cbeta')
-    parser.add_argument('--disable_predict_seq',
-                        action='store_true',
-                        default=False,
-                        help='disable seq pred. Use with predict_coords; default is to predict seq')
-    parser.add_argument('--add_noise',
-                        type=float,
-                        default=0.0,
-                        help='add gaussian noise to coord inputs')
     parser.add_argument('--clip_gradients',
                         action='store_true',
                         default=False,
                         help='clip gradients by norm')
-    parser.add_argument('--seq_struct_loss_weights',
-                        type=str,
-                        default='',
-                        help='specify seq-structure loss weights: e.g. 0.5,0.5')
-    parser.add_argument('--masked_protein_base_model',
-                        type=str,
-                        default='',
-                        help='ckpt file for masked protein model for fine-tuned ppi model')
-    parser.add_argument('--adj_sparse',
-                        action='store_true',
-                        default=False,
-                        help='Use SidechainNet Dataset also')
     parser.add_argument('--atom_types',
                         type=str,
                         default='backbone',
