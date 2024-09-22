@@ -44,7 +44,7 @@ class PPISequenceSampler():
                         subset_ids=[], max_samples=None):
         
         if self.args.from_pdb == '':
-            from src.data.dataloaders import get_dataloader_for_testing
+            from src.datamodules.dataloaders import get_dataloader_for_testing
             mr_min = 0.0
             if partner_selection == 'both':
                 mr_min = self.args.masking_rate_max
