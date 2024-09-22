@@ -145,7 +145,7 @@ class SCNProteinMaskedMultiAtomDatasetBatched(data.Dataset):
             [i for i, t in enumerate(missing_res_mask) if t == '+']).long()
         
         sequence_len = sel_seq_end - sel_seq_start
-        self.get_coords(scn_p0, sel_seq_start, sel_seq_end, mode=self.atom_mode)
+        self.get_coords(scn_p0, sel_seq_start, sel_seq_end)
         distances = self.calculate_distances()
         seq = scn_p0.seq[sel_seq_start:sel_seq_end]
         missing_res_mask = scn_p0.mask[sel_seq_start:sel_seq_end]
@@ -177,8 +177,7 @@ class SCNProteinMaskedMultiAtomDatasetBatched(data.Dataset):
                             select_intersection=True) #intersection ensures non-missing residues
         else:
             sequence_label = \
-            p0.mask_sequence(contact_percent=self.percent_mask,
-                             pdf_flip=self.pdf_flip, pdf_flip_index=self.pdf_flip_index)
+            p0.mask_sequence(contact_percent=self.percent_mask)
         
         nfeats = p0.prim_masked.float()
         
@@ -210,8 +209,8 @@ class SCNProteinMaskedMultiAtomDatasetBatched(data.Dataset):
         missing_residues_mask = missing_residues_mask.unsqueeze(1).expand(-1, self.num_atoms).reshape(num_res * self.num_atoms)
         if self.gmodel in ['egnn-trans-ma',
                            'egnn-trans-ma-ppi']:
-            edges_all = get_inter_intra_edges(nfeats.shape[0], self.num_atoms)
-            return p0.id, nfeats, self.coords, edges_all, missing_residues_mask, \
+            #edges_all = get_inter_intra_edges(nfeats.shape[0], self.num_atoms)
+            return p0.id, nfeats, self.coords, None, missing_residues_mask, \
                 sequence_label, seq_positions, metadata
 
     def is_valid(self, p, crop=True):

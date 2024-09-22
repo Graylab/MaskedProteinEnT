@@ -178,6 +178,7 @@ class AntibodyMaskedMultiAtomDatasetBatched(data.Dataset):
         return p0.id, nfeats, masked_coords, edges_all, missing_residues_mask, \
                 sequence_label, seq_positions, metadata
 
+
     def debug_coord_masking(self, id, masked_coords, coords):
         import matplotlib.pyplot as plt
         #res selction

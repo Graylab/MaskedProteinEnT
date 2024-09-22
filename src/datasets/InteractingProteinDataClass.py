@@ -291,13 +291,10 @@ class FragmentedMultiChainInteractingProtein(MultiChainInteractingProtein):
                          type,
                          id,
                          prim=prim,
-                         contact_indices=contact_indices,
-                         dist_angle_mat=dist_angle_mat,
-                         phi_psi_mat=dist_angle_mat)
+                         contact_indices=contact_indices
+                         )
 
         self.fragment_indices = fragment_indices
-        self.n_terms = n_terms
-        self.c_terms = c_terms
         self.average_nn_coords = None
 
 

@@ -1,5 +1,6 @@
 import torch
-from src.data.datasets.SCNProteinMaskedMultiAtomDatasetBatched import SCNProteinMaskedMultiAtomDatasetBatched
+import random
+from src.datasets.SCNProteinMaskedMultiAtomDatasetBatched import SCNProteinMaskedMultiAtomDatasetBatched
 
 
 def collate_function_getter(with_metadata=False):
@@ -12,7 +13,6 @@ def collate_function_getter(with_metadata=False):
 def _helper_loader(dataset, args, with_metadata=False):
     return torch.utils.data.DataLoader(
     dataset,
-    shuffle=args.shuffle_dataset,
     collate_fn=collate_function_getter(with_metadata=with_metadata),
     batch_size=args.batch_size,
     pin_memory=True,
@@ -23,7 +23,6 @@ def split_dataset(dataset,args):
 
     train_split_length = int(len(dataset) * args.train_split)
     assert train_split_length <= len(dataset)
-    import random
     random.seed(args.seed)
     indices_data = list(range(0,len(dataset)))
     random.shuffle(indices_data)
@@ -61,7 +60,6 @@ def is_protein_dataset(args):
 
 def get_protein_dataset_setup(args):
     shared_arguments = dict(max_seq_len=args.max_seq_len,
-                            topk_ag=args.max_ag_neighbors,
                             max_mask=args.masking_rate_max,
                             crop=args.crop_sequences,
                             gmodel=args.protein_gmodel,

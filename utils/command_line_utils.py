@@ -13,7 +13,6 @@ def _get_args():
                         type=int,
                         default=1,
                         help='Number of proteins per batch')
-    parser.add_argument('--seed', type=int, default=0, help='Manual seed')
     parser.add_argument('--h5_file', type=str, default='')
     parser.add_argument('--h5_file_protein', type=str, default='')
     parser.add_argument('--h5_file_ppi', type=str, default='')
@@ -22,8 +21,6 @@ def _get_args():
     parser.add_argument('--h5_file_afab', type=str, default='')
     parser.add_argument('--h5_file_afsc', type=str, default='')
     
-    parser.add_argument('--model', type=str, default='')
-
     parser.add_argument('--output_dir', type=str, default='./')
     parser.add_argument('--masking_rate_max',
                         type=float,
@@ -53,10 +50,6 @@ def _get_args():
                         type=int,
                         default=6,
                         help='number of cpu procs available per node')
-    parser.add_argument('--from_pdb',
-                        type=str,
-                        default='',
-                        help='load info from pdb file instead of h5 file')
     parser.add_argument('--pdb_file',
                         type=str,
                         default='',
@@ -99,7 +92,7 @@ def _get_args():
                         help='Use SidechainNet Dataset also')
     parser.add_argument('--atom_types',
                         type=str,
-                        default='backbone',
+                        default='backbone_and_cb',
                         help='Use coords for these atoms. options: backbone, all, backbone_and_cb, cb, ca')
     parser.add_argument('--partner_name',
                         type=str,
@@ -135,10 +128,6 @@ def _get_args():
                         type=int,
                         default=5,
                         help='Save model every X number of epochs.')
-    parser.add_argument('--batch_size',
-                        type=int,
-                        default=1,
-                        help='Number of proteins per batch')
     parser.add_argument('--seed', type=int, default=0, help='Manual seed')
     parser.add_argument('--lr',
                         type=float,
@@ -209,29 +198,7 @@ def _get_args():
                         default=False,
                         help='use train dataset loader for prediction')
     now = str(datetime.now().strftime('%y%m%d_%H%M%S'))
-    default_model_path = os.path.join(project_path,
-                                      'trained_models/model_{}/'.format(now))
-    parser.add_argument('--output_dir', type=str, default=default_model_path)
-    parser.add_argument('--masking_rate_max',
-                        type=float,
-                        default=0.4,
-                        help='Max mask rate for one partner')
-    parser.add_argument('--masking_rate_min',
-                        type=float,
-                        default=0.1,
-                        help='Min mask rate for one partner')
-    parser.add_argument('--mask_ab_region',
-                        type=str,
-                        default='',
-                        help='mask ab region; h1,h2,h3,l1,l2,l3,cdrs')å
-    parser.add_argument('--num_gpus',
-                        type=int,
-                        default=1,
-                        help='number of gpus')
-    parser.add_argument('--num_procs',
-                        type=int,
-                        default=6,
-                        help='number of cpu procs available per node')
+
     parser.add_argument('--topk_metrics',
                         type=int,
                         default=1,
@@ -280,10 +247,6 @@ def _get_args():
                         action='store_true',
                         default=False,
                         help='clip gradients by norm')
-    parser.add_argument('--atom_types',
-                        type=str,
-                        default='backbone',
-                        help='Use coords for these atoms. options: backbone, all, backbone_and_cb, cb, ca')
     parser.add_argument('--lightning_save_last_model',
                         action='store_true',
                         default=False,

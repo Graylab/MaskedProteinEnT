@@ -4,7 +4,7 @@ import os
 import torch.utils.data as data
 from src.datasets.ppi_graph_dataset_utils \
     import get_edge_features, get_node_feats_for_prot, get_inter_intra_edges
-from src.datasets.masking_utils import mask_cb_coords, mask_nfeats_cb, add_pseudo_cb
+from src.datasets.masking_utils import mask_cb_coords, mask_nfeats_cb
 from src.datasets.InteractingProteinDataClass \
     import FragmentedMultiChainInteractingProtein
 from src.data.constants import _aa_dict, letter_to_num

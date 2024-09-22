@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks import LearningRateMonitor
 
 #model
-from src.models.ProteinMaskedLabelModel.ProteinMaskedLabelModel_EnT_MA \
+from src.model.ProteinMaskedLabelModel_EnT_MA \
      import ProteinMaskedLabelModel_EnT_MA
 
 #datamodule
@@ -50,26 +50,20 @@ def load_model(update_hyperparams, in_model):
 
 
 def get_hyperparamters(args):
-    n_labels = 20 if not args.add_esm_embeddings else 1280
-    n_labels_score = 16
+    n_labels = 20
     mode = 'backbone_and_cb' #args.atom_types
     natoms = 4
-    hyperparams_model = dict(base_model_ckpt=args.masked_protein_base_model,
-                             n_hidden=args.model_dim,
+    hyperparams_model = dict(n_hidden=args.model_dim,
                              dropout=args.dropout,
                              n_heads=args.heads,
                              n_labels=n_labels,
-                             n_labels_score=n_labels_score,
                              layers=args.layers,
                              top_k_metrics=args.topk_metrics,
                              weight_decay=args.weight_decay,
                              max_seq_len=args.max_seq_len,
                              max_neighbors=args.max_ag_neighbors,
-                             predict_from_esm=(args.predict_from_esm
-                                               and args.add_esm_embeddings),
                              thinning=args.scn_sequence_similarity,
                              natoms=natoms,
-                             min_epoch=args.start_epoch_prop,
                              checkpoint=args.internal_checkpoints,
                              lr_scheduler=args.scheduler)
 
@@ -164,7 +158,7 @@ def setup_and_train_ppi_entransformer_all(args, gpu_setup, gmodel):
     callback_lr = LearningRateMonitor(logging_interval='epoch')
     callbacks_list.append(callback_lr)
 
-    datamodule = get_datamodule(args, gmodel)
+    datamodule = get_datamodule(args)
     trainer_config = dict(max_epochs=args.epochs, accumulate_grad_batches=8)
     if args.model != '':
         trainer_config.update(dict(resume_from_checkpoint=args.model))
@@ -179,14 +173,13 @@ def setup_and_train_ppi_entransformer_all(args, gpu_setup, gmodel):
                          precision=64,
                          #deterministic=True,
                          multiple_trainloader_mode='min_size',
-                         gradient_clip_val=gradient_clip_value,
-                         detect_anomaly=args.lightning_detect_anomaly)
+                         gradient_clip_val=gradient_clip_value
+                         )
     if not wblogger is None:
         wblogger.log_hyperparams(hyperparams_model)
 
     if args.model == '':
-        model = get_model(hyperparams_model, gmodel,
-                          protein_base_model_ckpt=args.masked_protein_base_model)
+        model = get_model(hyperparams_model)
     else:
         # read learning rate from command line args
         update_hyperparams = dict(init_lr=args.lr)
@@ -195,8 +188,7 @@ def setup_and_train_ppi_entransformer_all(args, gpu_setup, gmodel):
                                 'cooldown': args.lr_cooldown
                                 }
         update_hyperparams.update(dict(lr=lr_scheduler_config))
-        model = load_model(update_hyperparams, args.model, gmodel,
-                          protein_base_model_ckpt=args.masked_protein_base_model)
+        model = load_model(update_hyperparams, args.model, gmodel)
         assert model.init_lr == args.lr
 
     if args.model == '':
