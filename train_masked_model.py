@@ -21,9 +21,9 @@ from utils.command_line_utils import _get_args
 
 stamp = datetime.now().strftime("%Y%m%d%H%M")
 
-sys.stderr = open('err_{}.txt'.format(stamp), 'a')
-sys.stderr.write("\n________\nSTART\n ")
-sys.stderr.write("\n" + str(datetime.now()) + "\n")
+#sys.stderr = open('err_{}.txt'.format(stamp), 'a')
+#sys.stderr.write("\n________\nSTART\n ")
+#sys.stderr.write("\n" + str(datetime.now()) + "\n")
 
 
 def get_date_stamped_id():
