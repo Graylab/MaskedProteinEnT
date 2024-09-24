@@ -11,9 +11,17 @@ For sampling, in your virtual environment, pip install as follows:
 pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html
 pip install -r requirements.txt
 ```
-Alternatively, we provide a dockerfile for easy installation.
 
-Also see example notebook, "MaskedProteinEnT-colab-example.ipynb" for quick testing and sampling.
+## Installation with Docker
+`Dockerfile` is provided as example/demo of package use. Please see example command lines to use below. For production use you might need to mount host data dir as a subdir to `/code` dir where package code is located.
+```
+docker build -t masked-protein-ent .
+docker run -it masked-protein-ent
+```
+
+## Test with Colab
+Example Jupyter notebook for Colab is provided in MaskedProteinEnT-colab-example.ipynb. Please note that due to volatile nature of Colab platform it is difficult to ensure that in long term such notebook will be functionining so some edits might be required.
+Alternatively, we provide a dockerfile for easy installation.
 
 Sampling works well on CPUs and GPUs.
 **Sampling is just as fast on cpus: <2min for 10000 sequences**
@@ -111,16 +119,6 @@ python3 PPIAbAgSequenceSampler.py  \
 # To specify sampling at a specific indices:
 # --mask_ab_indices 10,11,12
 ```
-
-## Docker
-`Dockerfile` is provided as example/demo of package use. Please see example command lines to use below. For production use you might need to mount host data dir as a subdir to `/code` dir where package code is located.
-```
-docker build -t masked-protein-ent .
-docker run -it masked-protein-ent
-```
-
-## Colab
-Example Jupyter notebook for Colab is provided in MaskedProteinEnT-colab-example.ipynb. Please note that due to volatile nature of Colab platform it is difficult to ensure that in long term such notebook will be functionining so some edits might be required.
 
 ## References
 EnTransformer code is based on [Phil Wang's implementation](https://github.com/lucidrains/En-transformer/tree/373efe752d0a9959fc0a61e2c6d5ca423c491682) of EGNN (Satorras et al. 2021) with equivariant transformer layers.
