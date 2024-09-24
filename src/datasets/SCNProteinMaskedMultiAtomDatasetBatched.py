@@ -209,8 +209,8 @@ class SCNProteinMaskedMultiAtomDatasetBatched(data.Dataset):
         missing_residues_mask = missing_residues_mask.unsqueeze(1).expand(-1, self.num_atoms).reshape(num_res * self.num_atoms)
         if self.gmodel in ['egnn-trans-ma',
                            'egnn-trans-ma-ppi']:
-            #edges_all = get_inter_intra_edges(nfeats.shape[0], self.num_atoms)
-            return p0.id, nfeats, self.coords, None, missing_residues_mask, \
+            edges_all = get_inter_intra_edges(nfeats.shape[0], self.num_atoms)
+            return p0.id, nfeats, self.coords, edges_all, missing_residues_mask, \
                 sequence_label, seq_positions, metadata
 
     def is_valid(self, p, crop=True):
@@ -256,6 +256,7 @@ class SCNProteinMaskedMultiAtomBatchBatched:
     def __init__(self, batch_data):
         (self.id_, self.feats, self.coords, self.edges, self.mask,
          self.seqlabel, self.seq_positions, self.metadata) = batch_data
+        #print(self.feats)
 
     def data(self):
         return self.id_, self.features()
