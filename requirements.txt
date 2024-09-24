@@ -1,11 +1,11 @@
 pytorch-lightning
-biopython
+biopython<=1.79
 certifi
 einops
 h5py
 logomaker
 matplotlib
-numpy
+numpy<1.24
 pandas
 pytorch-ranger
 rotary-embedding-torch
@@ -18,3 +18,5 @@ tqdm
 typing-extensions
 umap-learn
 requests
+openMM
+sidechainnet
