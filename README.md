@@ -120,6 +120,18 @@ python3 PPIAbAgSequenceSampler.py  \
 # --mask_ab_indices 10,11,12
 ```
 
+## Training
+### Installation
+Model was trained with older versions of torch and pytorch_lightning. Newer versions are not backward compatible. The following instructions work for python 3.9 and cuda 11.1.
+To train the model, you need to install torch and other dependencies as follows:
+In your virtual env, run the following commands:
+```
+pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
+pip install -r requirements_torch191.txt
+```
+### Training
+See training script "train_model_protein.sh" under scripts to train model on the proteins dataset.
+
 ## References
 EnTransformer code is based on [Phil Wang's implementation](https://github.com/lucidrains/En-transformer/tree/373efe752d0a9959fc0a61e2c6d5ca423c491682) of EGNN (Satorras et al. 2021) with equivariant transformer layers.
 Models and sequence recovery reported for Antibody CDRs with different models reported in Figure 2 available at https://zenodo.org/record/8313466.
