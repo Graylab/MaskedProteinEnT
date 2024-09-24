@@ -6,11 +6,15 @@ Code to sample sequences with a contextual Masked EnTransformer as described in 
 
 ## Installation
 
-In your virtual environment, pip install as follows:
+For sampling, in your virtual environment, pip install as follows:
 ```sh
 pip install torch torchvision torchaudio -f https://download.pytorch.org/whl/torch_stable.html
 pip install -r requirements.txt
 ```
+Alternatively, we provide a dockerfile for easy installation.
+
+Also see example notebook, "MaskedProteinEnT-colab-example.ipynb" for quick testing and sampling.
+
 Sampling works well on CPUs and GPUs.
 **Sampling is just as fast on cpus: <2min for 10000 sequences**
 
