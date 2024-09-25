@@ -41,7 +41,7 @@ fi
 gd2_dataset_ids=$(pwd)/training_datasets/ids_train_casp12nr50_nr70Ig_nr40Others.fasta
 
 
-### UGH, download works but is taking way too long... gonna comment it out atm
+### UGH, download works but is taking way too long... (5 hours) gonna comment it out atm
 # # Download sidechainnet_casp12_50.pkl
 # if [ ! -f training_datasets/sidechainnet_casp12_50.pkl ]; then
 #   wget -P training_datasets https://zenodo.org/records/13831403/files/sidechainnet_casp12_50.pkl
