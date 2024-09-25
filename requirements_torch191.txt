@@ -21,3 +21,4 @@ umap-learn
 requests
 openMM
 sidechainnet
+wandb==0.18.1
