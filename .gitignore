@@ -3,3 +3,6 @@
 *.txt
 *.png
 *.pt
+*.log
+out_dir_seed_1/
+slurm_env
