@@ -14,6 +14,11 @@ gmodel=egnn-trans-ma
 atom_types=backbone_and_cb
 NN=48
 
+### Training seed and output directory
+SEED=1
+MODELS_DIR=models_out_dir_seed_$SEED
+EPOCHS=10
+
 ### WANDB ENTITY
 WANDB_ENTITY="fadh-johns-hopkins-university"
 if [ "$WANDB_ENTITY" = "YOUR_WANDB_ENTITY" ]; then
@@ -27,11 +32,25 @@ if [ ! -d datasets ]; then
 fi
 
 ### DOWNLOAD DATASET IF NOT EXISTS
+
+# Download ids_train_casp12nr50_nr70Ig_nr40Others.fasta
 if [ ! -f training_datasets/ids_train_casp12nr50_nr70Ig_nr40Others.fasta ]; then
   wget -P training_datasets https://zenodo.org/records/13831403/files/ids_train_casp12nr50_nr70Ig_nr40Others.fasta
 fi
 
 gd2_dataset_ids=$(pwd)/training_datasets/ids_train_casp12nr50_nr70Ig_nr40Others.fasta
+
+
+### UGH, download works but is taking way too long... gonna comment it out atm
+# # Download sidechainnet_casp12_50.pkl
+# if [ ! -f training_datasets/sidechainnet_casp12_50.pkl ]; then
+#   wget -P training_datasets https://zenodo.org/records/13831403/files/sidechainnet_casp12_50.pkl
+# fi
+
+# # copy dataset to local temp directory
+# if [ ! -f /tmp/sidechainnet_casp12_50.pkl ]; then
+#   cp datasets/sidechainnet_casp12_50.pkl /tmp/.
+# fi
 
 ### SCRATCH DIRECTORY, DATASET AND GPU SETUP
 # n_proc=$SLURM_NTASKS_PER_NODE ### Ran into issues while doing troubleshooting on interactive node
@@ -51,12 +70,6 @@ if [ ! -f /tmp/sidechainnet_casp12_50.pkl ]
 then
     cp /scratch16/jgray21/smahaja4_active/datasets/sidechainnet_c12_ss50/sidechainnet_casp12_50.pkl /tmp/.
 fi
-
-### Training seed and output directory
-SEED=1
-### Maybe need to change output model directory
-MODELS_DIR=out_dir_seed_$SEED
-EPOCHS=10
 
 # date
 
