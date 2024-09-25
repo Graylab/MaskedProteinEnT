@@ -131,7 +131,7 @@ pip install -r requirements_torch191.txt
 ```
 ### Training
 - See training script "train_model_protein.sh" under scripts to train model on the proteins dataset.
-- Training datasets available under this [Zenodo link]([https://zenodo.org/doi/10.5281/zenodo.13831402])
+- Training datasets available under this [Zenodo link](https://zenodo.org/doi/10.5281/zenodo.13831402)
 - Training script requires a [wandb entity](https://wandb.ai/site) for training logging. See `--wandb_entity` argument in `train_masked_model.py`.
 
 ## References
