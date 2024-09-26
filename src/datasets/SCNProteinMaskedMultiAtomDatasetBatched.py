@@ -1,3 +1,8 @@
+"""
+This code is adapted from the SidechainNet repository.
+Repository link: https://github.com/jonathanking/sidechainnet
+"""
+
 import torch
 import numpy as np
 import os, sys
