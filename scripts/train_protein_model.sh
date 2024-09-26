@@ -2,7 +2,38 @@
 
 source <YOUR ENVIRONMENT>
 ### MUST be set up #####
-WANDB_NAME=<YOUR WANDB NAME>
+### WANDB ENTITY
+WANDB_ENTITY="YOUR_WANDB_ENTITY"
+if [ "$WANDB_ENTITY" = "YOUR_WANDB_ENTITY" ]; then
+  echo "Error: Please set your WANDB_ENTITY variable."
+  exit 1
+fi
+
+### CHECK AND CREATE DATASETS DIRECTORY
+if [ ! -d datasets ]; then
+  mkdir training_datasets
+fi
+
+### DOWNLOAD DATASET IF NOT EXISTS
+
+# Download ids_train_casp12nr50_nr70Ig_nr40Others.fasta
+if [ ! -f training_datasets/ids_train_casp12nr50_nr70Ig_nr40Others.fasta ]; then
+  wget -P training_datasets https://zenodo.org/records/13831403/files/ids_train_casp12nr50_nr70Ig_nr40Others.fasta
+fi
+
+gd2_dataset_ids=$(pwd)/training_datasets/ids_train_casp12nr50_nr70Ig_nr40Others.fasta
+
+## DOWNLOAD SEPARATELY
+### UGH, download works but is taking way too long... (5 hours)
+# # Download sidechainnet_casp12_50.pkl
+# if [ ! -f training_datasets/sidechainnet_casp12_50.pkl ]; then
+#   wget -P training_datasets https://zenodo.org/records/13831403/files/sidechainnet_casp12_50.pkl
+# fi
+
+
+#### procs, gpus ###############
+n_proc=6
+num_gpus=1
 
 #Default settings
 LAYERS=4
@@ -14,11 +45,7 @@ save_every=5
 gmodel=egnn-trans-ma
 atom_types=backbone_and_cb
 NN=48
-gd2_dataset_ids=ids_train_casp12nr50_nr70Ig_nr40Others.fasta
 
-#### procs, gpus ###############
-n_proc=6
-num_gpus=1
 
 #### training #######
 SEED=1
