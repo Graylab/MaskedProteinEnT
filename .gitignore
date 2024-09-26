@@ -6,3 +6,4 @@
 *.log
 models_out_dir_seed_1/
 training_datasets/
+training_datasets_old/
