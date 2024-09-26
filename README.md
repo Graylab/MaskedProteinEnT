@@ -147,7 +147,7 @@ pip install -r requirements_torch191.txt
 - EnTransformer code is based on [Phil Wang's implementation](https://github.com/lucidrains/En-transformer/tree/373efe752d0a9959fc0a61e2c6d5ca423c491682) of EGNN (Satorras et al. 2021) with equivariant transformer layers.
 - Models and sequence recovery reported for Antibody CDRs with different models reported in Figure 2 available at https://zenodo.org/record/8313466.
 - Please note that our protein training dataset is sourced from [SidechainNet](https://github.com/jonathanking/sidechainnet). You can download the dataset directly from their repository. We are providing it here solely for ease of access. We highly recommend visiting the linked repository above and referring to their publications for more detailed information. Please remember to cite SidechainNet in your work if you utilize their dataset.
-<br>
+
 If you use this repository to generate or score sequences, please cite:
 ```
 Mahajan, S. P., Ruffolo, J. A., Gray, J. J., "Contextual protein and antibody encodings from equivariant graph transformers", 2021.
