@@ -278,7 +278,7 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
         else:
             import sys
             sys.exit('Partner selection not defined.')
-        print(p0.id, mask_residue_selection)
+        #print(p0.id, mask_residue_selection)
         sequence_masked_label_p0 = \
             p0.mask_sequence(contact_percent=self.percent_mask[percent_index],
                              subset_selection_indices=mask_residue_selection,
