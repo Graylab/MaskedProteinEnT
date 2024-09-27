@@ -1,20 +1,11 @@
 #!/bin/bash -l
 
 #source <YOUR ENVIRONMENT>
-module unload python
-module load cuda/11.1.0
-module load python/3.9.0
-module load git
 
-module list
-
-source /scratch16/jgray21/smahaja4_active/repositories/240519/training_new_env/bin/activate
-export PYTHONPATH="$PYTHONPATH:/scratch16/jgray21/smahaja4_active/repositories/240519/training_new_env:/scratch16/jgray21/smahaja4_active/repositories/240519/training_new_env/bin:/scratch16/jgray21/smahaja4_active/repositories/240519/MaskedProteinEnT:/scratch16/jgray21/smahaja4_active/repositories/240519/MaskedProteinEnT/src" 
 
 ### MUST be set up #####
 ### WANDB ENTITY
-#WANDB_ENTITY="YOUR_WANDB_ENTITY"
-WANDB_ENTITY=saipooja
+WANDB_ENTITY="YOUR_WANDB_ENTITY"
 if [ "$WANDB_ENTITY" = "YOUR_WANDB_ENTITY" ]; then
   echo "Error: Please set your WANDB_ENTITY variable."
   exit 1
@@ -40,7 +31,7 @@ fi
 gd2_dataset_ids=/scratch16/jgray21/smahaja4_active/datasets/nredundant_train_test_lists_New/ids_train_casp12nr50_nr70Ig_nr40Others.fasta
 
 #### procs, gpus ###############
-n_proc=0
+n_proc=12
 num_gpus=1
 
 #Default settings
