@@ -93,7 +93,7 @@ def setup_and_train_ppi_entransformer_all(args, gpu_setup, gmodel):
             assert os.path.exists(args.model)
         datestamped_id = get_date_stamped_id()
         wlogger_init = dict(project=project_name,
-                            entity='saipooja',
+                            entity=args.wandb_entity,
                             config=config_run,
                             id=datestamped_id)
         out_dir = os.path.join(args.output_dir, datestamped_id)
@@ -110,7 +110,7 @@ def setup_and_train_ppi_entransformer_all(args, gpu_setup, gmodel):
         wlogger_init = dict(project=project_name,
                             #reinit=True,
                             resume="must",
-                            entity='saipooja',
+                            entity=args.wandb_entity,
                             config=config_run,
                             id=datestamped_id.rstrip())
         out_dir = args.output_dir

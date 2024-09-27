@@ -251,5 +251,9 @@ def _get_args():
                         action='store_true',
                         default=False,
                         help='option to ModelCheckpoint callback of pytorch lightning')
+    parser.add_argument('--wandb_entity',
+                        default='saipooja',
+                        type=str,
+                        help='wandb name -- must provide')
     return parser.parse_args()
 
