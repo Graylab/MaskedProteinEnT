@@ -1,7 +1,7 @@
 import torch
 import random
+import torch.utils.data as torchdata
 from src.datasets.SCNProteinMaskedMultiAtomDatasetBatched import SCNProteinMaskedMultiAtomDatasetBatched
-
 
 def collate_function_getter(with_metadata=False):
     if not with_metadata:
@@ -70,9 +70,7 @@ def get_protein_dataset_setup(args):
 
 
 def get_ppi_dataset_setup(args, dataset_name=None):
-    shared_arguments = dict(topk_ab=args.max_ab_neighbors,
-                            topk_ag=args.max_ag_neighbors,
-                            max_mask=args.masking_rate_max,
+    shared_arguments = dict(max_mask=args.masking_rate_max,
                             min_mask=args.masking_rate_min,
                             gmodel=args.protein_gmodel,
                             max_seq_len=args.max_seq_len

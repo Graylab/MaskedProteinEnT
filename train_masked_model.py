@@ -188,7 +188,7 @@ def setup_and_train_ppi_entransformer_all(args, gpu_setup, gmodel):
                                 'cooldown': args.lr_cooldown
                                 }
         update_hyperparams.update(dict(lr=lr_scheduler_config))
-        model = load_model(update_hyperparams, args.model, gmodel)
+        model = load_model(update_hyperparams, args.model)
         assert model.init_lr == args.lr
 
     if args.model == '':

@@ -159,6 +159,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
         
         if 'protein' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['protein']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             loss = torch.nn.functional.cross_entropy(y_hat,
                                                     labels,
@@ -171,6 +172,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             accuracy = self.train_accuracy_protein(y_hat_ignore_index, labels)
             self.log("train_loss_{}".format('protein'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -179,6 +181,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('train_accuracy_{}'.format('protein'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -188,6 +191,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             
         if 'ppi' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['ppi']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             loss = torch.nn.functional.cross_entropy(y_hat,
                                                     labels,
@@ -201,6 +205,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             
             self.log("train_loss_{}".format('ppi'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -209,6 +214,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('train_accuracy_{}'.format('ppi'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -218,6 +224,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
         if 'abag_ppi' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['abag_ppi']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             loss = torch.nn.functional.cross_entropy(y_hat,
                                                     labels,
@@ -231,6 +238,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             
             self.log("train_loss_{}".format('abag_ppi'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -239,6 +247,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('train_accuracy_{}'.format('abag_ppi'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -248,6 +257,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
         if 'abag' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['abag']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             loss = torch.nn.functional.cross_entropy(y_hat,
                                                     labels,
@@ -261,6 +271,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             
             self.log("train_loss_{}".format('abag'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -269,6 +280,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('train_accuracy_{}'.format('abag'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -279,6 +291,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
         for key in ['ab', 'afab', 'afsc']:
             if key in batch:
                 id, (nfeats, coords, edges, mask, labels, pos_indices) = batch[key]
+                batch_size = nfeats.shape[0]
                 y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
                 loss = torch.nn.functional.cross_entropy(y_hat,
                                                         labels,
@@ -292,6 +305,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
                 
                 self.log("train_loss_{}".format('ab'),
                         loss,
+                        batch_size=batch_size,
                         on_step=False,
                         on_epoch=True,
                         prog_bar=True,
@@ -300,6 +314,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
                 self.log('train_accuracy_{}'.format('ab'),
                         accuracy,
+                        batch_size=batch_size,
                         on_step=False,
                         on_epoch=True,
                         prog_bar=True,
@@ -309,6 +324,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
         self.log("train_loss",
                     total_loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -321,6 +337,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
         total_loss = 0.0
         if 'protein' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['protein']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             #print('out:', y_hat.shape, coords.shape)
             loss = torch.nn.functional.cross_entropy(y_hat,
@@ -334,6 +351,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             accuracy = self.val_accuracy_protein(y_hat_ignore_index, labels)
             self.log("val_loss_{}".format('protein'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -342,6 +360,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('val_accuracy_{}'.format('protein'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -351,6 +370,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
         
         if 'ppi' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['ppi']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             loss = torch.nn.functional.cross_entropy(y_hat,
                                                     labels,
@@ -363,6 +383,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             accuracy = self.val_accuracy_ppi(y_hat_ignore_index, labels)
             self.log("val_loss_{}".format('ppi'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -371,6 +392,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('val_accuracy_{}'.format('ppi'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -380,6 +402,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
         
         if 'abag_ppi' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['abag_ppi']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             loss = torch.nn.functional.cross_entropy(y_hat,
                                                     labels,
@@ -392,6 +415,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             accuracy = self.val_accuracy_abag_ppi(y_hat_ignore_index, labels)
             self.log("val_loss_{}".format('abag_ppi'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -400,6 +424,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('val_accuracy_{}'.format('abag_ppi'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -409,6 +434,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
         if 'abag' in batch:
             id, (nfeats, coords, edges, mask, labels, pos_indices) = batch['abag']
+            batch_size = nfeats.shape[0]
             y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
             loss = torch.nn.functional.cross_entropy(y_hat,
                                                     labels,
@@ -421,6 +447,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
             accuracy = self.val_accuracy_abag(y_hat_ignore_index, labels)
             self.log("val_loss_{}".format('abag'),
                     loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -429,6 +456,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
             self.log('val_accuracy_{}'.format('abag'),
                     accuracy,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,
@@ -439,7 +467,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
         for key in ['ab', 'afab', 'afsc']:
             if key in batch:
                 id, (nfeats, coords, edges, mask, labels, pos_indices) = batch[key]
-                
+                batch_size = nfeats.shape[0]
                 y_hat, coords, _ = self(nfeats, coords, mask=mask, pos_indices=pos_indices)
                 loss = torch.nn.functional.cross_entropy(y_hat,
                                                         labels,
@@ -452,6 +480,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
                 accuracy = self.val_accuracy_ab(y_hat_ignore_index, labels)
                 self.log("val_loss_{}".format('ab'),
                         loss,
+                        batch_size=batch_size,
                         on_step=False,
                         on_epoch=True,
                         prog_bar=True,
@@ -460,6 +489,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
 
                 self.log('val_accuracy_{}'.format('ab'),
                         accuracy,
+                        batch_size=batch_size,
                         on_step=False,
                         on_epoch=True,
                         prog_bar=True,
@@ -469,6 +499,7 @@ class ProteinMaskedLabelModel_EnT_MA(pl.LightningModule):
                 
         self.log("val_loss",
                     total_loss,
+                    batch_size=batch_size,
                     on_step=False,
                     on_epoch=True,
                     prog_bar=True,

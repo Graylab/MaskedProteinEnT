@@ -126,9 +126,6 @@ class ProteinMaskedMultiAtomDatasetBatched(data.Dataset):
                              pdf_flip=self.pdf_flip, pdf_flip_index=self.pdf_flip_index)
         nfeats, _ = \
             get_node_feats_for_prot(p0,
-                                    self.n_pe_nodes,
-                                    self.n_pe_edges,
-                                    self.include_bb,
                                     masked=True)
         sequence_label = sequence_masked_label_p0
 

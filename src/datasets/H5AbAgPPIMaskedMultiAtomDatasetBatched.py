@@ -19,7 +19,6 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
             self,
             filename,
             gmodel='egnn-trans-ma',
-            onehot_prim=True,
             max_seq_len=None,
             contact_dist_threshold=8.0,
             max_mask=0.40,
@@ -33,7 +32,6 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
             ):
         """
         :param filename: The h5 file for the antibody data.
-        :param onehot_prim:
             Whether or not to onehot-encode the primary structure data.
         """
         super(H5AbAgPPIMaskedMultiAtomDatasetBatched, self).__init__()
@@ -117,14 +115,9 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
                                                    p1_frag_positions
                                                    )
 
-        if self.onehot_prim:
-            # Try preprocessing - how large?
-            p0.to_one_hot()
-            p1.to_one_hot()
-
-        else:
-            p0.prim.unsqueeze_(1)
-            p1.prim.unsqueeze_(1)
+        # Try preprocessing - how large?
+        p0.to_one_hot()
+        p1.to_one_hot()
 
         # 1. Distance, angle matrix
         try:
@@ -194,14 +187,9 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
                                                    ag_contact_indices,
                                                    ag_frag_positions)
 
-        if self.onehot_prim:
-            # Try preprocessing - how large?
-            ab.to_one_hot()
-            ag.to_one_hot()
-        else:
-            ab.prim.unsqueeze_(1)
-            ag.prim.unsqueeze_(1)
-
+        ab.to_one_hot()
+        ag.to_one_hot()
+        
         # 1. Distance, angle matrix
         try:
             dist_angle_mat = self.h5file['dist_angle_mat'][
@@ -305,13 +293,9 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
 
         nfeats_p0, _ = \
             get_node_feats_for_prot(p0,
-                                    self.n_pe_nodes,
-                                    self.n_pe_edges,
                                     masked=True)
         nfeats_p1, _ = \
             get_node_feats_for_prot(p1,
-                                    self.n_pe_nodes,
-                                    self.n_pe_edges,
                                     masked=True)
         
         nfeats = torch.cat([nfeats_p0, nfeats_p1], dim=0)
