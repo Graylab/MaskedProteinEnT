@@ -23,9 +23,9 @@ class MaskedSequenceStructureMADataModule(pl.LightningDataModule):
         shared_arguments_protein = get_protein_dataset_setup(args)
         casp_version = args.scn_casp_version
         thinning = args.scn_sequence_similarity
-        scn_path = '/scratch16/jgray21/smahaja4_active/datasets/sidechainnet'
-        input_file = '{}_c{}_ss{}/sidechainnet_casp{}_{}.pkl'.format(
-            scn_path, casp_version, thinning, casp_version, thinning)
+        scn_path = args.scn_path
+        input_file = '{}/sidechainnet_casp{}_{}.pkl'.format(
+            scn_path, casp_version, thinning)
         self.train_protein_dataset = None
         self.validation_protein_dataset = None
         self.test_protein_dataset = None

@@ -90,6 +90,9 @@ def _get_args():
                         action='store_true',
                         default=False,
                         help='Use SidechainNet Dataset also')
+    parser.add_argument('--scn_path',
+                        type=str,
+                        help='Path to sidechainnet dataset. Avoid trailing "/"')
     parser.add_argument('--atom_types',
                         type=str,
                         default='backbone_and_cb',
