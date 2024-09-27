@@ -215,10 +215,7 @@ class H5AbAgPPIMaskedMultiAtomDatasetBatched(data.Dataset):
         # 2. Backbone dihedral matrix
         ab.phi_psi_mat = phi_psi_mat[:, :len_ab]
         ag.phi_psi_mat = phi_psi_mat[:, len_ab:]
-        #Prepare Inputs
-        ab.prepare_inputs(self.lift_ors, self.clean_up)
-        ag.prepare_inputs(self.lift_ors, self.clean_up)
-
+        
         if 'bk_and_cb_coords' in self.h5file.keys():
             coords = torch.tensor(self.h5file['bk_and_cb_coords'][index][:4, :total_seq_len, :])
         else:

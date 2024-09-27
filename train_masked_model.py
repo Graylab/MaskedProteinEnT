@@ -121,10 +121,8 @@ def setup_and_train_ppi_entransformer_all(args, gpu_setup, gmodel):
         args_dict = vars(args)
         open(outfile_json_args, 'w').write(json.dumps(args_dict))
     
-    try:
-        wblogger = pl.loggers.WandbLogger(**wlogger_init)
-    except:
-        wblogger = None
+    wblogger = pl.loggers.WandbLogger(**wlogger_init)
+    
     os.environ['WANDB_DIR'] = out_dir
     
     # Checkpointing
