@@ -131,7 +131,7 @@ pip install -r requirements_torch191.txt
 ```
 ### Training
 - The general training code is provided in `training_masked_model.py`. 
-- For training the model under different settings, see `train_model_protein.sh` for training on the general protein dataset, `train_model_ppi-abag.sh` for fine-tuning on ppi-abag datasets.
+- For training the model under different settings, see `scripts/train_model_protein.sh` for training on the general protein dataset, `scripts/fine_tune_ppi-abag.sh` for fine-tuning on ppi-abag datasets.
 - Training datasets are available under this [Zenodo link](https://zenodo.org/doi/10.5281/zenodo.13831402). See the table below for an overview and the methods section for detailed information of each dataset.
 - The training script requires a [wandb entity](https://wandb.ai/site) for training logging. See `--wandb_entity` argument in `train_masked_model.py`.
 
