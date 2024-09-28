@@ -1,10 +1,10 @@
 #!/bin/bash -l
 
-#source <YOUR ENVIRONMENT>
+source <YOUR ENVIRONMENT>
 
 ### MUST be set up ####
 ### WANDB ENTITY ###
-WANDB_ENTITY="fadh-johns-hopkins-university"
+WANDB_ENTITY="YOUR_WANDB_ENTITY"
 if [ "$WANDB_ENTITY" = "YOUR_WANDB_ENTITY" ]; then
   echo "Error: Please set your WANDB_ENTITY variable."
   exit 1
