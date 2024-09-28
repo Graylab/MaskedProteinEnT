@@ -10,9 +10,7 @@ if [ "$WANDB_ENTITY" = "YOUR_WANDB_ENTITY" ]; then
 fi
 
 ### CHECK AND CREATE DATASETS DIRECTORY
-if [ ! -d datasets ]; then
-  mkdir training_datasets
-fi
+mkdir -p training_datasets
 
 ### DOWNLOAD DATASET IF NOT EXISTS
 
