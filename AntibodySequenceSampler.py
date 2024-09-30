@@ -15,9 +15,9 @@ import sys
 
 from tqdm import tqdm
 
-from utils.utils_plotting \
-    import plot_seq_logo, plot_histogram_for_array,\
-    sequences_to_probabilities
+from utils.plotting \
+    import plot_seq_logo,\
+    sequences_to_probabilities #plot_histogram_for_array
 
 torch.set_default_dtype(torch.float64)
 torch.set_grad_enabled(False)
