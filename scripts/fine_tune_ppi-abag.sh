@@ -32,10 +32,10 @@ fi
 
 ### CHECK/DOWNLOAD->DECOMPRESS PRETRAINED MODEL ###
 mkdir -p models
-if [ ! -f models/model.tar.gz ] | [ ! -f models/ProtEnT_backup.ckpt ]; then
+if [ ! -f models/model.tar.gz ] && [ ! -f models/ProtEnT_backup.ckpt ]; then
   wget -P models https://zenodo.org/records/8313466/files/model.tar.gz
 fi
-tar --skip-old-files --strip-components=1 -xvzf models/model.tar.gz models/ProtEnT_backup.ckpt
+tar --skip-old-files --strip-components=1 -C models -xvzf models/model.tar.gz models/ProtEnT_backup.ckpt
 
 ### procs, gpus ###
 n_proc=12
