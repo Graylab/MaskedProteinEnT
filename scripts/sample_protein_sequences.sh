@@ -1,36 +1,29 @@
 #!/bin/bash -l
 
-module unload python
-module load cuda/11.1.0
-module load python/3.9.0
-module load git
+source <YOUR ENVIRONMENT> 
 
-source /home/smahaja4/repositories/clone_masked_model/venv_py39_torch19/bin/activate
-
-export OMP_NUM_THREADS=12
-gmodel=egnn-trans-ma-ppi
-
-#### procs, gpus ###############
-n_proc=$SLURM_NTASKS_PER_NODE
-num_gpus=0
-env | grep -a SLURM | tee slurm_env
-qu="a100"
-if [ "$SLURM_JOB_PARTITION" = "$qu"  ]; then
-  IFS=','
-  read -a strarr <<< "$SLURM_STEP_GPUS"
-  num_gpus=${#strarr[*]}
+### CHECK/DOWNLOAD->DECOMPRESS PRETRAINED MODEL ###
+mkdir -p models
+if [ ! -f models/model.tar.gz ] && [ ! -f models/ProtEnT_backup.ckpt ]; then
+  wget -P models https://zenodo.org/records/8313466/files/model.tar.gz
 fi
-##############################
+tar --skip-old-files --strip-components=1 -C models -xvzf models/model.tar.gz models/ProtEnT_backup.ckpt
 
-MODEL=../trained_models/ProtEnT_backup.ckpt
-TEST_RESULTS_BASE=/scratch16/jgray21/smahaja4_active/tmp/
-PDB_DIR=/scratch16/jgray21/smahaja4_active/repositories/MaskedProteinEnT/data/proteins
-python3 /scratch16/jgray21/smahaja4_active/repositories/MaskedProteinEnT/ProteinSequenceSampler.py  \
-	--output_dir ${TEST_RESULTS_BASE} \
-	--num_gpus $num_gpus \
-	--num_procs $n_proc \
+### procs, gpus ###
+n_proc=6
+num_gpus=1
+
+echo "Running inference"
+date
+
+MODEL=models/ProtEnT_backup.ckpt
+OUTDIR=sampled_sequences
+PDB_DIR=data/proteins
+python3 ProteinSequenceSampler.py  \
+	--output_dir ${OUTDIR} \
 	--model $MODEL \
 	--from_pdb $PDB_DIR \
 	--sample_temperatures 0.2,0.5 \
-	--num_samples 100
-
+	--num_samples 100 \
+	--num_gpus $num_gpus \
+	--num_procs $n_proc \
