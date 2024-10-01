@@ -151,7 +151,7 @@ pip install -r requirements_torch191.txt
 
 If you use this repository to generate or score sequences, please cite:
 ```
-Mahajan, S. P., Ruffolo, J. A., Gray, J. J., "Contextual protein and antibody encodings from equivariant graph transformers", 2023.
+Mahajan, S. P., Ruffolo, J. A., Gray, J. J., "Contextual protein and antibody encodings from equivariant graph transformers", biorxiv, 2023.
 ```
 ```
 Mahajan, S. P., Davila-Hernandez, F.A., Ruffolo, J. A., Gray, J. J., "How well do contextual protein encodings learn structure, function, and evolutionary context?", 2023. Under Review.
