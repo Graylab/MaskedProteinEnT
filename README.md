@@ -73,7 +73,7 @@ python3 ProteinSequenceSampler.py  \
 The above command samples all sequences at 100% masking (i.e. only coord information is used by the model). You may sample at any other masking rate between 0-100% and the model will randomly select the positions to mask. For more options, run:
 
 ```bash
-python3 AntibodySequenceSampler.py --help
+python3 ProteinSequenceSampler.py --help
 ```
 
 ## Sampling interface residues with partner context
