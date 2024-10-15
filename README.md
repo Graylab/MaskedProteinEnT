@@ -33,7 +33,9 @@ Download and extract trained models from [Zenodo](https://zenodo.org/records/831
 tar -xvzf model.tar.gz
 ```
 
-## Sampling protein sequences
+## Sampling sequences
+
+### Sampling protein sequences
 To design/generate all positions on the protein, run:
 ```bash
 MODEL=trained_models/ProtEnT_backup.ckpt
@@ -52,7 +54,7 @@ The above command samples all sequences at 100% masking (i.e. only coord informa
 python3 ProteinSequenceSampler.py --help
 ```
 
-## Sampling antibody sequences without partner context
+### Sampling antibody sequences without partner context
 To design/generate all positions on the protein, run:
 ```bash
 MODEL=trained_models/ProtEnT_backup.ckpt
@@ -76,7 +78,7 @@ The above command samples all sequences at 100% masking (i.e. only coord informa
 python3 ProteinSequenceSampler.py --help
 ```
 
-## Sampling interface residues with partner context
+### Sampling interface residues with partner context
 To generate/design the interface residues for the first partner (order determined by partners.json), run:
 
 ```bash
@@ -99,7 +101,7 @@ python3 PPIAbAgSequenceSampler.py  \
 # --partner_name both
 ```
 
-## Sampling antibody interface residues with antigen context
+### Sampling antibody interface residues with antigen context
 ```
 MODEL=trained_models/ProtAbAgEnT_backup.ckpt
 OUTDIR=./sampled_abag_sequences
@@ -119,6 +121,9 @@ python3 PPIAbAgSequenceSampler.py  \
 # To specify sampling at a specific indices:
 # --mask_ab_indices 10,11,12
 ```
+
+### Performance: Timing for Protein Design Tasks (CPU vs GPU)
+<iframe src="data/timing_table.md" style="border:none;width:100%;height:500px;"></iframe>
 
 ## Training
 ### Installation
