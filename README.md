@@ -33,7 +33,9 @@ Download and extract trained models from [Zenodo](https://zenodo.org/records/831
 tar -xvzf model.tar.gz
 ```
 
-## Sampling protein sequences
+## Sampling sequences
+
+### Sampling protein sequences
 To design/generate all positions on the protein, run:
 ```bash
 MODEL=trained_models/ProtEnT_backup.ckpt
@@ -52,7 +54,7 @@ The above command samples all sequences at 100% masking (i.e. only coord informa
 python3 ProteinSequenceSampler.py --help
 ```
 
-## Sampling antibody sequences without partner context
+### Sampling antibody sequences without partner context
 To design/generate all positions on the protein, run:
 ```bash
 MODEL=trained_models/ProtEnT_backup.ckpt
@@ -76,7 +78,7 @@ The above command samples all sequences at 100% masking (i.e. only coord informa
 python3 ProteinSequenceSampler.py --help
 ```
 
-## Sampling interface residues with partner context
+### Sampling interface residues with partner context
 To generate/design the interface residues for the first partner (order determined by partners.json), run:
 
 ```bash
@@ -99,7 +101,7 @@ python3 PPIAbAgSequenceSampler.py  \
 # --partner_name both
 ```
 
-## Sampling antibody interface residues with antigen context
+### Sampling antibody interface residues with antigen context
 ```
 MODEL=trained_models/ProtAbAgEnT_backup.ckpt
 OUTDIR=./sampled_abag_sequences
@@ -119,6 +121,179 @@ python3 PPIAbAgSequenceSampler.py  \
 # To specify sampling at a specific indices:
 # --mask_ab_indices 10,11,12
 ```
+
+### Performance: Timing for Protein Design Tasks (CPU vs GPU)
+- Timing values are displayed in the format `mm:ss.000` (minutes:seconds.milliseconds).
+- Each GPU run was conducted on 1 node, utilizing 6 processes per task on an NVIDIA A100 GPU.
+- Each CPU run was conducted on 1 node, with 8 processes per CPU
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:center;">Sequence Design Task</th>
+      <th style="text-align:center;">CPU/GPU</th>
+      <th style="text-align:left;">No. of Designs</th>
+      <th style="text-align:left;">Real Time</th>
+      <th style="text-align:left;">User Time</th>
+      <th style="text-align:left;">System Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="8" style="text-align:center;">Protein Monomer Sequence Design (126 amino acids)</td>
+      <td rowspan="4" style="text-align:center;">CPU</td>
+      <td>100</td>
+      <td>01:18.639</td>
+      <td>00:28.506</td>
+      <td>00:03.628</td>
+    </tr>
+    <tr>
+      <td>1,000</td>
+      <td>00:46.927</td>
+      <td>00:33.980</td>
+      <td>00:04.286</td>
+    </tr>
+    <tr>
+      <td>10,000</td>
+      <td>01:10.349</td>
+      <td>01:03.870</td>
+      <td>00:04.842</td>
+    </tr>
+    <tr>
+      <td>100,000</td>
+      <td>02:16.108</td>
+      <td>06:14.454</td>
+      <td>00:12.911</td>
+    </tr>
+    <tr>
+      <td rowspan="4" style="text-align:center;">GPU</td>
+      <td>100</td>
+      <td>00:49.538</td>
+      <td>00:06.923</td>
+      <td>00:01.888</td>
+    </tr>
+    <tr>
+      <td>1,000</td>
+      <td>00:56.923</td>
+      <td>00:12.329</td>
+      <td>00:02.101</td>
+    </tr>
+    <tr>
+      <td>10,000</td>
+      <td>00:37.218</td>
+      <td>00:57.562</td>
+      <td>00:02.771</td>
+    </tr>
+    <tr>
+      <td>100,000</td>
+      <td>01:59.589</td>
+      <td>08:33.594</td>
+      <td>00:09.799</td>
+    </tr>
+    <tr>
+      <td rowspan="8" style="text-align:center;">Protein-Protein Interface</td>
+      <td rowspan="4" style="text-align:center;">CPU</td>
+      <td>100</td>
+      <td>01:13.022</td>
+      <td>01:16.282</td>
+      <td>00:08.224</td>
+    </tr>
+    <tr>
+      <td>1,000</td>
+      <td>00:43.972</td>
+      <td>01:22.581</td>
+      <td>00:08.596</td>
+    </tr>
+    <tr>
+      <td>10,000</td>
+      <td>01:19.130</td>
+      <td>02:22.664</td>
+      <td>00:09.561</td>
+    </tr>
+    <tr>
+      <td>100,000</td>
+      <td>03:28.817</td>
+      <td>12:41.153</td>
+      <td>00:17.398</td>
+    </tr>
+    <tr>
+      <td rowspan="4" style="text-align:center;">GPU</td>
+      <td>100</td>
+      <td>00:11.688</td>
+      <td>00:09.020</td>
+      <td>00:03.329</td>
+    </tr>
+    <tr>
+      <td>1,000</td>
+      <td>00:39.591</td>
+      <td>00:18.655</td>
+      <td>00:03.423</td>
+    </tr>
+    <tr>
+      <td>10,000</td>
+      <td>00:49.310</td>
+      <td>01:46.022</td>
+      <td>00:04.493</td>
+    </tr>
+    <tr>
+      <td>100,000</td>
+      <td>03:01.718</td>
+      <td>16:08.428</td>
+      <td>00:14.877</td>
+    </tr>
+    <tr>
+      <td rowspan="8" style="text-align:center;">Antibody-Antigen Interface</td>
+      <td rowspan="4" style="text-align:center;">CPU</td>
+      <td>100</td>
+      <td>01:18.330</td>
+      <td>02:45.636</td>
+      <td>00:16.683</td>
+    </tr>
+    <tr>
+      <td>1,000</td>
+      <td>00:48.824</td>
+      <td>03:00.106</td>
+      <td>00:16.751</td>
+    </tr>
+    <tr>
+      <td>10,000</td>
+      <td>01:37.904</td>
+      <td>05:21.302</td>
+      <td>00:18.257</td>
+    </tr>
+    <tr>
+      <td>100,000</td>
+      <td>05:27.519</td>
+      <td>27:10.781</td>
+      <td>00:27.179</td>
+    </tr>
+    <tr>
+      <td rowspan="4" style="text-align:center;">GPU</td>
+      <td>100</td>
+      <td>01:35.224</td>
+      <td>00:13.541</td>
+      <td>00:04.228</td>
+    </tr>
+    <tr>
+      <td>1,000</td>
+      <td>00:47.984</td>
+      <td>00:29.034</td>
+      <td>00:03.739</td>
+    </tr>
+    <tr>
+      <td>10,000</td>
+      <td>01:11.780</td>
+      <td>03:00.415</td>
+      <td>00:04.555</td>
+    </tr>
+    <tr>
+      <td>100,000</td>
+      <td>04:24.885</td>
+      <td>28:10.995</td>
+      <td>00:14.905</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Training
 ### Installation
