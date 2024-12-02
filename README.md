@@ -2,7 +2,7 @@
 Code to sample sequences with a contextual Masked EnTransformer as described in  ["Contextual protein and antibody encodings from equivariant graph transformers"](https://pubmed.ncbi.nlm.nih.gov/37503113/).
 
 ![Self-supervised learning to transduce sequence labels for masked residues from those for unmasked residues by context matching on proteins.![image](https://github.com/Graylab/MaskedProteinEnT/assets/14285703/383bb634-1870-42ac-a82a-7563a3b90c82)
-](./Model.png)
+](./Model.jpg)
 
 ## Installation
 
